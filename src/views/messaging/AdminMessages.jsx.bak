@@ -1,0 +1,712 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Container, 
+  Row, 
+  Col, 
+  Card, 
+  Tabs, 
+  Tab, 
+  Button, 
+  Form,
+  ListGroup,
+  Alert,
+  Badge,
+  InputGroup,
+  Spinner
+} from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
+import { BsChat, BsPerson, BsSearch, BsSend, BsShop, BsTruck, BsShield } from 'react-icons/bs';
+import { toast } from 'react-toastify';
+import './WhatsAppMessages.css'; // Shared CSS for WhatsApp-style messages
+
+const AdminMessages = () => {
+  // State for users and messages
+  const [customers, setCustomers] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [deliveryUsers, setDeliveryUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Loading states
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('customers');
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Refs for scrolling
+  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+  
+  // Get current admin ID
+  const currentUserId = JSON.parse(localStorage.getItem('user'))?.id;
+  const navigate = useNavigate();
+  const { userId } = useParams(); // In case we navigate from a user page
+
+  // API functions
+  const fetchCustomers = async () => {
+    try {
+      setUsersLoading(true);
+      const response = await fetch('/api/messages/customers/directory', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setCustomers(data.data);
+      } else {
+        toast.error('Failed to load customers');
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      toast.error('Error loading customers');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const fetchVendors = async () => {
+    try {
+      setUsersLoading(true);
+      const response = await fetch('/api/messages/vendors/directory', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setVendors(data.data);
+      } else {
+        toast.error('Failed to load vendors');
+      }
+    } catch (error) {
+      console.error('Error fetching vendors:', error);
+      toast.error('Error loading vendors');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const fetchDeliveryUsers = async () => {
+    try {
+      setUsersLoading(true);
+      const response = await fetch('/api/messages/delivery/directory', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setDeliveryUsers(data.data);
+      } else {
+        toast.error('Failed to load delivery users');
+      }
+    } catch (error) {
+      console.error('Error fetching delivery users:', error);
+      toast.error('Error loading delivery users');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const fetchMessages = async (userId, userRole) => {
+    if (!userId) return;
+    
+    try {
+      setMessagesLoading(true);
+      const response = await fetch(`/api/messages/conversation/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessages(data.data);
+      } else {
+        toast.error('Failed to load messages');
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      toast.error('Error loading messages');
+    } finally {
+      setMessagesLoading(false);
+    }
+  };
+
+  // Load users based on active tab
+  useEffect(() => {
+    if (activeTab === 'customers') {
+      fetchCustomers();
+    } else if (activeTab === 'vendors') {
+      fetchVendors();
+    } else if (activeTab === 'delivery') {
+      fetchDeliveryUsers();
+    }
+  }, [activeTab]);
+
+  // Load messages when a user is selected
+  useEffect(() => {
+    if (selectedUser) {
+      fetchMessages(selectedUser._id, activeTab.slice(0, -1)); // Remove 's' from the end
+    }
+  }, [selectedUser]);
+
+  // Scroll to bottom of messages
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  // If we have a userId from the URL, select that user
+  useEffect(() => {
+    if (userId) {
+      // Determine which tab to set based on the user ID format or other logic
+      // This is a simplistic approach - you might need more sophisticated detection
+      const fetchUserDetails = async () => {
+        try {
+          const response = await fetch(`/api/users/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          const data = await response.json();
+          if (data.success) {
+            const userRole = data.data.role;
+            if (userRole === 'customer') {
+              setActiveTab('customers');
+              await fetchCustomers();
+              const user = customers.find(c => c._id === userId);
+              if (user) setSelectedUser(user);
+            } else if (userRole === 'vendor') {
+              setActiveTab('vendors');
+              await fetchVendors();
+              const user = vendors.find(v => v._id === userId);
+              if (user) setSelectedUser(user);
+            } else if (userRole === 'delivery') {
+              setActiveTab('delivery');
+              await fetchDeliveryUsers();
+              const user = deliveryUsers.find(d => d._id === userId);
+              if (user) setSelectedUser(user);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user details:', error);
+        }
+      };
+      
+      fetchUserDetails();
+    }
+  }, [userId, customers, vendors, deliveryUsers]);
+
+  // Handle sending a message
+  const handleSendMessage = async () => {
+    if (!selectedUser || !newMessage.trim()) return;
+    
+    let endpoint = '';
+    let body = {};
+    
+    // Determine the endpoint based on the active tab
+    switch(activeTab) {
+      case 'customers':
+        endpoint = '/api/messages/admin-to-customer';
+        body = { customerId: selectedUser._id, content: newMessage };
+        break;
+      case 'vendors':
+        // Assuming there's an admin-to-vendor endpoint
+        endpoint = '/api/messages/admin-to-vendor';
+        body = { vendorId: selectedUser._id, content: newMessage };
+        break;
+      case 'delivery':
+        // Assuming there's an admin-to-delivery endpoint
+        endpoint = '/api/messages/admin-to-delivery';
+        body = { deliveryId: selectedUser._id, content: newMessage };
+        break;
+      default:
+        toast.error('Invalid user type');
+        return;
+    }
+    
+    try {
+      setLoading(true);
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(body)
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        // Add the new message to the list
+        setMessages(prev => [...prev, data.data]);
+        setNewMessage(''); // Clear the input
+        toast.success('Message sent successfully');
+      } else {
+        toast.error(data.message || 'Failed to send message');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Error sending message');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Handle tab change
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSelectedUser(null);
+    setMessages([]);
+  };
+  
+  // Handle user selection
+  const handleUserSelect = (user) => {
+    setSelectedUser(user);
+  };
+  
+  // Filter users based on search term
+  const filteredUsers = () => {
+    const searchTermLower = searchTerm.toLowerCase();
+    switch(activeTab) {
+      case 'customers':
+        return customers.filter(customer => 
+          customer.name?.toLowerCase().includes(searchTermLower) || 
+          customer.email?.toLowerCase().includes(searchTermLower)
+        );
+      case 'vendors':
+        return vendors.filter(vendor => 
+          vendor.name?.toLowerCase().includes(searchTermLower) || 
+          vendor.email?.toLowerCase().includes(searchTermLower) || 
+          vendor.storeName?.toLowerCase().includes(searchTermLower)
+        );
+      case 'delivery':
+        return deliveryUsers.filter(delivery => 
+          delivery.name?.toLowerCase().includes(searchTermLower) || 
+          delivery.email?.toLowerCase().includes(searchTermLower)
+        );
+      default:
+        return [];
+    }
+  };
+  
+  // Handle key press in message input
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  useEffect(() => {
+    // Fetch messages
+    fetchMessages();
+    
+    // If customerId is provided, find and select messages for that customer
+    if (customerId) {
+      const customerMessage = messages.find(msg => 
+        msg.senderId === customerId || msg.receiverId === customerId
+      );
+      
+      if (customerMessage) {
+        setSelectedMessage(customerMessage);
+        setActiveTab('customers');
+      }
+    }
+  }, [customerId]);
+
+  // Filter messages by type
+  const customerMessages = messages.filter(msg => 
+    msg.senderType === 'customer' || msg.receiverType === 'customer'
+  );
+  
+  const adminMessages = messages.filter(msg => 
+    msg.senderType === 'admin' && msg.receiverType === 'admin'
+  );
+
+  // Group customer messages by customer
+  const customerGroups = {};
+  customerMessages.forEach(msg => {
+    const customerId = msg.senderType === 'customer' ? msg.senderId : msg.receiverId;
+    const customerName = msg.senderType === 'customer' ? msg.senderName : msg.receiverName;
+    
+    if (!customerGroups[customerId]) {
+      customerGroups[customerId] = {
+        customerId,
+        customerName,
+        messages: [msg],
+        lastMessage: msg,
+        unreadCount: msg.isRead ? 0 : 1,
+        orderId: msg.orderId || null
+      };
+    } else {
+      customerGroups[customerId].messages.push(msg);
+      
+      // Update last message if this one is newer
+      if (new Date(msg.createdAt) > new Date(customerGroups[customerId].lastMessage.createdAt)) {
+        customerGroups[customerId].lastMessage = msg;
+      }
+      
+      // Increment unread count if message is not read
+      if (!msg.isRead) {
+        customerGroups[customerId].unreadCount++;
+      }
+      
+      // Set orderId if available
+      if (msg.orderId && !customerGroups[customerId].orderId) {
+        customerGroups[customerId].orderId = msg.orderId;
+      }
+    }
+  });
+
+  // Convert customer groups to array and sort by last message date
+  const customerConversations = Object.values(customerGroups).sort((a, b) => 
+    new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt)
+  );
+
+  // Handle message selection
+
+// Filter users based on search term
+const filteredUsers = () => {
+  const searchTermLower = searchTerm.toLowerCase();
+  switch(activeTab) {
+    case 'customers':
+      return customers.filter(customer => 
+        customer.name?.toLowerCase().includes(searchTermLower) || 
+        customer.email?.toLowerCase().includes(searchTermLower)
+      );
+    case 'vendors':
+      return vendors.filter(vendor => 
+        vendor.name?.toLowerCase().includes(searchTermLower) || 
+        vendor.email?.toLowerCase().includes(searchTermLower) || 
+        vendor.storeName?.toLowerCase().includes(searchTermLower)
+      );
+    case 'delivery':
+      return deliveryUsers.filter(delivery => 
+        delivery.name?.toLowerCase().includes(searchTermLower) || 
+        delivery.email?.toLowerCase().includes(searchTermLower)
+      );
+    default:
+      return [];
+  }
+};
+
+// Handle key press in message input
+const handleKeyPress = (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    handleSendMessage();
+  }
+};
+
+useEffect(() => {
+  // Fetch messages
+  fetchMessages();
+  
+  // If customerId is provided, find and select messages for that customer
+  if (customerId) {
+    const customerMessage = messages.find(msg => 
+      msg.senderId === customerId || msg.receiverId === customerId
+    );
+    
+    if (customerMessage) {
+      setSelectedMessage(customerMessage);
+      setActiveTab('customers');
+    }
+  }
+}, [customerId]);
+
+// Filter messages by type
+const customerMessages = messages.filter(msg => 
+  msg.senderType === 'customer' || msg.receiverType === 'customer'
+);
+
+const adminMessages = messages.filter(msg => 
+  msg.senderType === 'admin' && msg.receiverType === 'admin'
+);
+
+// Group customer messages by customer
+const customerGroups = {};
+customerMessages.forEach(msg => {
+  const customerId = msg.senderType === 'customer' ? msg.senderId : msg.receiverId;
+  const customerName = msg.senderType === 'customer' ? msg.senderName : msg.receiverName;
+  
+  if (!customerGroups[customerId]) {
+    customerGroups[customerId] = {
+      customerId,
+      customerName,
+      messages: [msg],
+      lastMessage: msg,
+      unreadCount: msg.isRead ? 0 : 1,
+      orderId: msg.orderId || null
+    };
+  } else {
+    customerGroups[customerId].messages.push(msg);
+    
+    // Update last message if this one is newer
+    if (new Date(msg.createdAt) > new Date(customerGroups[customerId].lastMessage.createdAt)) {
+      customerGroups[customerId].lastMessage = msg;
+    }
+    
+    // Increment unread count if message is not read
+    if (!msg.isRead) {
+      customerGroups[customerId].unreadCount++;
+    }
+    
+    // Set orderId if available
+    if (msg.orderId && !customerGroups[customerId].orderId) {
+      customerGroups[customerId].orderId = msg.orderId;
+    }
+  }
+});
+
+// Convert customer groups to array and sort by last message date
+const customerConversations = Object.values(customerGroups).sort((a, b) => 
+  new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt)
+);
+
+// Handle message selection
+const handleSelectMessage = (message) => {
+  setSelectedMessage(message);
+};
+
+// Handle sending message to customer
+const handleSendToCustomer = async (content) => {
+  if (!selectedMessage) {
+    alert('Please select a customer conversation');
+    return;
+  }
+  
+  const customerId = selectedMessage.customerId || 
+    (selectedMessage.senderType === 'customer' ? selectedMessage.senderId : selectedMessage.receiverId);
+  
+  try {
+    await sendMessageToCustomerFromAdmin(
+      customerId, 
+      content, 
+      selectedMessage.orderId || null
+    );
+    fetchMessages();
+  } catch (error) {
+    console.error('Error sending message to customer:', error);
+  }
+};
+
+// Handle sending broadcast message to all admins
+const handleSendBroadcast = async (e) => {
+  e.preventDefault();
+  
+  if (!broadcastMessage.trim()) {
+    return;
+  }
+  
+  try {
+    await sendMessageToAllAdmins(broadcastMessage);
+    setBroadcastMessage('');
+    fetchMessages();
+  } catch (error) {
+    console.error('Error sending broadcast message:', error);
+  }
+};
+
+return (
+  <Container fluid className="mt-4">
+    <h2>Admin Messaging Center</h2>
+    <Row>
+      <Col md={4}>
+        <Card className="mb-3">
+          <Card.Header>
+            <Tabs
+              activeKey={activeTab}
+              onSelect={handleTabChange}
+              className="mb-0 border-bottom-0"
+            >
+              <Tab eventKey="customers" title={<span><BsPerson /> Customers</span>} />
+              <Tab eventKey="vendors" title={<span><BsShop /> Vendors</span>} />
+              <Tab eventKey="delivery" title={<span><BsTruck /> Delivery</span>} />
+            </Tabs>
+          </Card.Header>
+          <Card.Body className="p-0">
+            <div className="p-2">
+              <InputGroup className="mb-2">
+                <InputGroup.Text>
+                  <BsSearch />
+                </InputGroup.Text>
+                <Form.Control
+                  placeholder={`Search ${activeTab}...`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </InputGroup>
+            </div>
+            
+            <ListGroup variant="flush" className="user-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+              {usersLoading ? (
+                <div className="text-center p-3">
+                  <Spinner animation="border" size="sm" /> Loading users...
+                </div>
+              ) : filteredUsers().length > 0 ? (
+                filteredUsers().map(user => (
+                  <ListGroup.Item 
+                    key={user._id}
+                    action 
+                    active={selectedUser && selectedUser._id === user._id}
+                    onClick={() => handleUserSelect(user)}
+                    className="d-flex justify-content-between align-items-center"
+                  >
+                    <div>
+                      {activeTab === 'customers' && <BsPerson className="me-2" />}
+                      {activeTab === 'vendors' && <BsShop className="me-2" />}
+                      {activeTab === 'delivery' && <BsTruck className="me-2" />}
+                      <span>{user.name || user.storeName || 'Unknown'}</span>
+                      <div className="small text-muted">{user.email}</div>
+                    </div>
+                    {user.unreadCount > 0 && (
+                      <Badge bg="danger" pill>
+                        {user.unreadCount}
+                      </Badge>
+                    )}
+                  </ListGroup.Item>
+                ))
+              ) : (
+                <ListGroup.Item className="text-center">
+                  No {activeTab} found
+                </ListGroup.Item>
+              )}
+            </ListGroup>
+          </Card.Body>
+        </Card>
+      </Col>
+
+      <Col md={8}>
+        <Card className="chat-card">
+          <Card.Header className="d-flex justify-content-between align-items-center">
+            {selectedUser ? (
+              <div>
+                {activeTab === 'customers' && <BsPerson className="me-2" />}
+                {activeTab === 'vendors' && <BsShop className="me-2" />}
+                {activeTab === 'delivery' && <BsTruck className="me-2" />}
+                <span>{selectedUser.name || selectedUser.storeName || 'Unknown'}</span>
+              </div>
+            ) : (
+              <span>Select a user to start messaging</span>
+            )}
+          </Card.Header>
+          <Card.Body>
+            <div 
+              ref={chatContainerRef} 
+              className="chat-container" 
+              style={{ height: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}
+            >
+              {messagesLoading ? (
+                <div className="text-center p-3">
+                  <Spinner animation="border" /> Loading messages...
+                </div>
+              ) : selectedUser ? (
+                messages.length > 0 ? (
+                  <div className="messages-list">
+                    {messages.map((message, index) => {
+                      const isAdmin = message.sender === 'admin' || message.sender?._id === currentUserId;
+                      return (
+                        <div 
+                          key={message._id || index}
+                          className={`message-bubble mb-2 ${isAdmin ? 'admin-message' : 'user-message'}`}
+                          style={{
+                            alignSelf: isAdmin ? 'flex-end' : 'flex-start',
+                            backgroundColor: isAdmin ? '#0d6efd' : '#f0f0f0',
+                            color: isAdmin ? 'white' : 'black',
+                            borderRadius: '18px',
+                            padding: '10px 15px',
+                            maxWidth: '70%',
+                            marginLeft: isAdmin ? 'auto' : '0',
+                            marginRight: isAdmin ? '0' : 'auto'
+                          }}
+                        >
+                          <div>{message.content}</div>
+                          <div className="small text-end" style={{ opacity: 0.8 }}>
+                            {new Date(message.createdAt).toLocaleTimeString()}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+              }
+              selectedConversation={selectedMessage}
+              onSendMessage={handleSendToCustomer}
+              loading={loading}
+              error={error}
+            />
+          ) : (
+            <Card className="message-detail h-100">
+              <Card.Header>Admin Team Messages</Card.Header>
+              <Card.Body className="message-content">
+                {selectedMessage && activeTab === 'admins' ? (
+                  <div className="messages-container">
+                    <div className="message message-received">
+                      <div className="message-bubble">
+                        <div className="message-content">{selectedMessage.content}</div>
+                        <div className="message-meta">
+                          <small className="text-muted">
+                            From: {selectedMessage.senderName} • {new Date(selectedMessage.createdAt).toLocaleString()}
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center p-4">
+                    <p className="text-muted">
+                      {activeTab === 'admins' 
+                        ? 'Select a message to view details or use the form to send a broadcast message to all admins' 
+                        : 'Select a customer conversation to view messages'
+                      }
+                    </p>
+                  </div>
+                )}
+              </Card.Body>
+            </Card>
+          )}
+          
+          {selectedMessage && activeTab === 'customers' && (
+            <Card className="mt-3">
+              <Card.Header>Customer Information</Card.Header>
+              <Card.Body>
+                <p><strong>Name:</strong> {
+                  selectedMessage.senderType === 'customer' 
+                    ? selectedMessage.senderName 
+                    : selectedMessage.receiverName
+                }</p>
+                {selectedMessage.orderId && (
+                  <p><strong>Order ID:</strong> {selectedMessage.orderId}</p>
+                )}
+                <div className="d-flex gap-2">
+                  <Button 
+                    variant="outline-primary"
+                    onClick={() => navigate(`/admin/customers/${selectedMessage.customerId || selectedMessage.senderId}`)}
+                  >
+                    View Customer Profile
+                  </Button>
+                  {selectedMessage.orderId && (
+                    <Button 
+                      variant="outline-secondary"
+                      onClick={() => navigate(`/admin/orders/${selectedMessage.orderId}`)}
+                    >
+                      View Order Details
+                    </Button>
+                  )}
+                </div>
+              </Card.Body>
+            </Card>
+          )}
+        </Col>
+      </Row>
+    </Container>
+  );
+};
+
+export default AdminMessages;

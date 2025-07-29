@@ -1,0 +1,625 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Container, 
+  Row, 
+  Col, 
+  Card, 
+  Tabs, 
+  Tab, 
+  Button, 
+  Form,
+  ListGroup,
+  Alert,
+  Badge,
+  InputGroup,
+  Spinner
+} from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
+import { BsChat, BsPerson, BsSearch, BsSend, BsShop, BsTruck, BsShield } from 'react-icons/bs';
+import { toast } from 'react-toastify';
+import './WhatsAppMessages.css'; // Shared CSS for WhatsApp-style messages
+
+const AdminMessages = () => {
+  // State for users and messages
+  const [customers, setCustomers] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [deliveryUsers, setDeliveryUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Loading states
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('customers');
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Refs for scrolling
+  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+  
+  // Get current admin ID
+  const currentUserId = JSON.parse(localStorage.getItem('user'))?.id;
+  const navigate = useNavigate();
+  const { userId } = useParams(); // In case we navigate from a user page
+
+  // API functions
+  const fetchCustomers = async () => {
+    try {
+      setUsersLoading(true);
+      const response = await fetch('/api/messages/customers/directory', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setCustomers(data.data);
+      } else {
+        toast.error('Failed to load customers');
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      toast.error('Error loading customers');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const fetchVendors = async () => {
+    try {
+      setUsersLoading(true);
+      const response = await fetch('/api/messages/vendors/directory', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setVendors(data.data);
+      } else {
+        toast.error('Failed to load vendors');
+      }
+    } catch (error) {
+      console.error('Error fetching vendors:', error);
+      toast.error('Error loading vendors');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const fetchDeliveryUsers = async () => {
+    try {
+      setUsersLoading(true);
+      const response = await fetch('/api/messages/delivery/directory', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setDeliveryUsers(data.data);
+      } else {
+        toast.error('Failed to load delivery users');
+      }
+    } catch (error) {
+      console.error('Error fetching delivery users:', error);
+      toast.error('Error loading delivery users');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const fetchMessages = async (userId, userRole) => {
+    if (!userId) return;
+    
+    try {
+      setMessagesLoading(true);
+      const response = await fetch(`/api/messages/conversation/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessages(data.data);
+      } else {
+        toast.error('Failed to load messages');
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      toast.error('Error loading messages');
+    } finally {
+      setMessagesLoading(false);
+    }
+  };
+
+  // Load all user types on component mount
+  useEffect(() => {
+    // Initial fetch of all user types
+    fetchCustomers();
+    fetchVendors();
+    fetchDeliveryUsers();
+    
+    // Set up polling for user list updates (every 30 seconds)
+    const userPollingInterval = setInterval(() => {
+      console.log('Polling for all user list updates...');
+      fetchCustomers();
+      fetchVendors();
+      fetchDeliveryUsers();
+    }, 30000); // 30 seconds
+    
+    // Clean up interval on unmount
+    return () => clearInterval(userPollingInterval);
+  }, []);
+
+  // Load messages when a user is selected with polling
+  useEffect(() => {
+    if (selectedUser) {
+      // Initial fetch
+      fetchMessages(selectedUser.id, selectedUser.role);
+      
+      // Set up polling for message updates (every 3 seconds)
+      const messagePollingInterval = setInterval(() => {
+        console.log(`Polling for messages with ${selectedUser.name || selectedUser.businessName}...`);
+        fetchMessages(selectedUser.id, selectedUser.role);
+      }, 3000); // 3 seconds
+      
+      // Clean up interval on unmount or user change
+      return () => clearInterval(messagePollingInterval);
+    }
+  }, [selectedUser]);
+
+  // Auto-scroll to bottom of messages
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  // If we have a userId from the URL, select that user
+  useEffect(() => {
+    if (userId) {
+      // Determine which tab to set based on the user ID format or other logic
+      const fetchUserDetails = async () => {
+        try {
+          // Try to find the user in our existing lists
+          let foundUser = null;
+          let userRole = '';
+          
+          // Check customers
+          const customerMatch = customers.find(c => c.id === userId);
+          if (customerMatch) {
+            foundUser = customerMatch;
+            userRole = 'customer';
+            setActiveTab('customers');
+          }
+          
+          // Check vendors
+          if (!foundUser) {
+            const vendorMatch = vendors.find(v => v.id === userId);
+            if (vendorMatch) {
+              foundUser = vendorMatch;
+              userRole = 'vendor';
+              setActiveTab('vendors');
+            }
+          }
+          
+          // Check delivery users
+          if (!foundUser) {
+            const deliveryMatch = deliveryUsers.find(d => d.id === userId);
+            if (deliveryMatch) {
+              foundUser = deliveryMatch;
+              userRole = 'delivery';
+              setActiveTab('delivery');
+            }
+          }
+          
+          // If found, select the user
+          if (foundUser) {
+            setSelectedUser({ ...foundUser, role: userRole });
+          } else {
+            // If not found in our lists, try to fetch user details directly
+            toast.info('Fetching user details...');
+            // Additional API call could be made here to fetch user details by ID
+          }
+        } catch (error) {
+          console.error('Error finding user:', error);
+          toast.error('Error finding user');
+        }
+      };
+      
+      fetchUserDetails();
+    }
+  }, [userId, customers, vendors, deliveryUsers]);
+
+  // Handle sending a message
+  const handleSendMessage = async () => {
+    if (!selectedUser || !newMessage.trim()) return;
+    
+    setLoading(true);
+    
+    try {
+      let endpoint = '';
+      let body = {};
+      
+      // Determine the correct endpoint based on the selected user's role
+      if (selectedUser.role === 'customer') {
+        endpoint = '/api/messages/admin-to-customer/general';
+        body = {
+          customerId: selectedUser.id,
+          content: newMessage
+        };
+      } else if (selectedUser.role === 'vendor') {
+        endpoint = '/api/messages/admin-to-vendor/general';
+        body = {
+          vendorId: selectedUser.id,
+          content: newMessage
+        };
+      } else if (selectedUser.role === 'delivery') {
+        endpoint = '/api/messages/admin-to-delivery/general';
+        body = {
+          deliveryId: selectedUser.id,
+          content: newMessage
+        };
+      }
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(body)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setNewMessage('');
+        // Add the new message to the messages list
+        fetchMessages(selectedUser.id, selectedUser.role);
+        toast.success('Message sent successfully');
+      } else {
+        toast.error(data.message || 'Failed to send message');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Error sending message');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Handle tab change
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+  
+  // Handle user selection
+  const handleUserSelect = (user) => {
+    setSelectedUser(user);
+  };
+  
+  // Filter users based on search term
+  const getFilteredUsers = () => {
+    let users = [];
+    
+    if (activeTab === 'customers') {
+      users = customers;
+    } else if (activeTab === 'vendors') {
+      users = vendors;
+    } else if (activeTab === 'delivery') {
+      users = deliveryUsers;
+    }
+    
+    if (!searchTerm) return users;
+    
+    return users.filter(user => {
+      const name = user.name || user.businessName || '';
+      const email = user.email || '';
+      const searchLower = searchTerm.toLowerCase();
+      
+      return name.toLowerCase().includes(searchLower) || 
+             email.toLowerCase().includes(searchLower);
+    });
+  };
+  
+  // Handle key press in message input
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // Determine if a message is from the admin (current user)
+  const isAdminMessage = (message) => {
+    return message.senderId === currentUserId;
+  };
+
+  // Get appropriate user name display
+  const getUserDisplayName = (user) => {
+    if (user.role === 'vendor') {
+      return user.businessName || user.name || 'Vendor';
+    } else if (user.role === 'customer') {
+      return user.name || 'Customer';
+    } else if (user.role === 'delivery') {
+      return user.name || 'Delivery User';
+    }
+    return user.name || 'User';
+  };
+
+  // Get appropriate icon for user type
+  const getUserIcon = (userRole) => {
+    switch (userRole) {
+      case 'customer':
+        return <BsPerson />;
+      case 'vendor':
+        return <BsShop />;
+      case 'delivery':
+        return <BsTruck />;
+      case 'admin':
+        return <BsShield />;
+      default:
+        return <BsPerson />;
+    }
+  };
+
+  // Get appropriate badge color for user type
+  const getUserBadgeVariant = (userRole) => {
+    switch (userRole) {
+      case 'customer':
+        return 'primary';
+      case 'vendor':
+        return 'success';
+      case 'delivery':
+        return 'warning';
+      case 'admin':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
+  };
+
+  return (
+    <Container fluid className="py-4">
+      <h2 className="mb-4">Admin Messaging System</h2>
+      
+      <Row>
+        <Col md={4} lg={3}>
+          <Card className="mb-4">
+            <Card.Header>
+              <Tabs
+                activeKey={activeTab}
+                onSelect={handleTabChange}
+                className="mb-2"
+              >
+                <Tab eventKey="customers" title="Customers" />
+                <Tab eventKey="vendors" title="Vendors" />
+                <Tab eventKey="delivery" title="Delivery" />
+              </Tabs>
+              
+              <InputGroup className="mt-2">
+                <InputGroup.Text>
+                  <BsSearch />
+                </InputGroup.Text>
+                <Form.Control
+                  placeholder={`Search ${activeTab}...`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </InputGroup>
+            </Card.Header>
+            
+            <Card.Body className="p-0">
+              {usersLoading ? (
+                <div className="text-center py-4">
+                  <Spinner animation="border" variant="primary" />
+                </div>
+              ) : (
+                <ListGroup variant="flush" className="user-list">
+                  {activeTab === 'customers' && getFilteredUsers().map(customer => (
+                    <ListGroup.Item 
+                      key={customer.id} 
+                      action 
+                      active={selectedUser?.id === customer.id}
+                      onClick={() => handleUserSelect({...customer, role: 'customer'})}
+                      className="d-flex align-items-center py-3"
+                    >
+                      <div className="user-avatar me-3">
+                        {getUserIcon('customer')}
+                      </div>
+                      <div>
+                        <div className="d-flex align-items-center">
+                          <div className="fw-bold">{getUserDisplayName({...customer, role: 'customer'})}</div>
+                          <Badge 
+                            bg={getUserBadgeVariant('customer')} 
+                            className="ms-2"
+                          >
+                            Customer
+                          </Badge>
+                        </div>
+                        <small className="text-muted">{customer.email}</small>
+                      </div>
+                    </ListGroup.Item>
+                  ))}
+                  
+                  {activeTab === 'vendors' && getFilteredUsers().map(vendor => (
+                    <ListGroup.Item 
+                      key={vendor.id} 
+                      action 
+                      active={selectedUser?.id === vendor.id}
+                      onClick={() => handleUserSelect({...vendor, role: 'vendor'})}
+                      className="d-flex align-items-center py-3"
+                    >
+                      <div className="user-avatar me-3" style={{ backgroundColor: '#28a745' }}>
+                        {getUserIcon('vendor')}
+                      </div>
+                      <div>
+                        <div className="d-flex align-items-center">
+                          <div className="fw-bold">{getUserDisplayName({...vendor, role: 'vendor'})}</div>
+                          <Badge 
+                            bg={getUserBadgeVariant('vendor')} 
+                            className="ms-2"
+                          >
+                            Vendor
+                          </Badge>
+                        </div>
+                        <small className="text-muted">{vendor.email}</small>
+                      </div>
+                    </ListGroup.Item>
+                  ))}
+                  
+                  {activeTab === 'delivery' && getFilteredUsers().map(delivery => (
+                    <ListGroup.Item 
+                      key={delivery.id} 
+                      action 
+                      active={selectedUser?.id === delivery.id}
+                      onClick={() => handleUserSelect({...delivery, role: 'delivery'})}
+                      className="d-flex align-items-center py-3"
+                    >
+                      <div className="user-avatar me-3" style={{ backgroundColor: '#fd7e14' }}>
+                        {getUserIcon('delivery')}
+                      </div>
+                      <div>
+                        <div className="d-flex align-items-center">
+                          <div className="fw-bold">{getUserDisplayName({...delivery, role: 'delivery'})}</div>
+                          <Badge 
+                            bg={getUserBadgeVariant('delivery')} 
+                            className="ms-2"
+                          >
+                            Delivery
+                          </Badge>
+                        </div>
+                        <small className="text-muted">{delivery.email}</small>
+                      </div>
+                    </ListGroup.Item>
+                  ))}
+                  
+                  {getFilteredUsers().length === 0 && (
+                    <ListGroup.Item className="text-center py-4">
+                      <div className="text-muted">No {activeTab} found</div>
+                    </ListGroup.Item>
+                  )}
+                </ListGroup>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={8} lg={9}>
+          <Card className="h-100">
+            {selectedUser ? (
+              <>
+                <Card.Header className="d-flex align-items-center">
+                  <div className="user-avatar me-3" style={{ 
+                    backgroundColor: selectedUser.role === 'vendor' ? '#28a745' : 
+                                    selectedUser.role === 'delivery' ? '#fd7e14' : '#0d6efd' 
+                  }}>
+                    {getUserIcon(selectedUser.role)}
+                  </div>
+                  <div>
+                    <div className="fw-bold">{getUserDisplayName(selectedUser)}</div>
+                    <div className="small">
+                      <Badge 
+                        bg={getUserBadgeVariant(selectedUser.role)} 
+                        className="me-2"
+                        style={{ opacity: 0.8 }}
+                      >
+                        {selectedUser.role.charAt(0).toUpperCase() + selectedUser.role.slice(1)}
+                      </Badge>
+                      {selectedUser.email}
+                    </div>
+                  </div>
+                </Card.Header>
+                
+                <Card.Body className="p-0 d-flex flex-column">
+                  <div 
+                    className="chat-messages p-3 flex-grow-1"
+                    style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 300px)' }}
+                    ref={chatContainerRef}
+                  >
+                    {messagesLoading ? (
+                      <div className="text-center py-4">
+                        <Spinner animation="border" variant="primary" />
+                      </div>
+                    ) : messages.length === 0 ? (
+                      <Alert variant="info" className="text-center">
+                        No messages yet. Start the conversation!
+                      </Alert>
+                    ) : (
+                      messages.map((message, index) => {
+                        const isAdmin = isAdminMessage(message);
+                        return (
+                          <div 
+                            key={message._id || index}
+                            className={`d-flex ${isAdmin ? 'justify-content-end' : 'justify-content-start'} mb-2`}
+                          >
+                            <div 
+                              className={`message-bubble ${isAdmin ? 'admin-message' : 'user-message'}`}
+                              style={{
+                                backgroundColor: isAdmin ? '#0d6efd' : '#f0f0f0',
+                                color: isAdmin ? 'white' : 'black',
+                                borderRadius: '18px',
+                                padding: '10px 15px',
+                                maxWidth: '70%',
+                                position: 'relative'
+                              }}
+                            >
+                              <div>{message.content}</div>
+                              <div className="small text-end" style={{ opacity: 0.8 }}>
+                                {new Date(message.createdAt).toLocaleTimeString()}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+                  
+                  <div className="p-3 border-top">
+                    <InputGroup>
+                      <Form.Control
+                        as="textarea"
+                        placeholder="Type a message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        style={{ resize: 'none', height: '50px' }}
+                      />
+                      <Button 
+                        variant="primary" 
+                        onClick={handleSendMessage}
+                        disabled={loading || !newMessage.trim()}
+                      >
+                        {loading ? (
+                          <Spinner animation="border" size="sm" />
+                        ) : (
+                          <BsSend />
+                        )}
+                      </Button>
+                    </InputGroup>
+                  </div>
+                </Card.Body>
+              </>
+            ) : (
+              <Card.Body className="text-center p-5">
+                <BsChat size={50} className="text-muted mb-3" />
+                <h4>Admin Messaging System</h4>
+                <p className="text-muted">
+                  Select a user from the left sidebar to start messaging.
+                </p>
+              </Card.Body>
+            )}
+          </Card>
+        </Col>
+      </Row>
+    </Container>
+  );
+};
+
+export default AdminMessages;

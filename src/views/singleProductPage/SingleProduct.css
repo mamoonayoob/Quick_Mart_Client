@@ -1,0 +1,352 @@
+/* SingleProduct.css - Modern styling for product detail page */
+
+.single-product-container {
+  padding: 2rem 0;
+}
+
+.product-breadcrumb {
+  margin-bottom: 1.5rem;
+}
+
+.product-breadcrumb .breadcrumb-item {
+  font-size: 0.9rem;
+}
+
+.product-breadcrumb .breadcrumb-item.active {
+  color: #13547a;
+  font-weight: 500;
+}
+
+/* Image Gallery Styling */
+.product-gallery {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.main-image-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1rem;
+  background-color: #f8f9fa;
+}
+
+/* Custom styling for react-inner-image-zoom */
+.iiz {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.iiz__img {
+  object-fit: contain;
+  max-height: 500px;
+  width: 100%;
+}
+
+.iiz__zoom-img {
+  object-fit: contain;
+}
+
+.iiz__hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(19, 84, 122, 0.8);
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-weight: 500;
+}
+
+/* Thumbnails */
+.thumbnails-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  cursor: pointer;
+  object-fit: cover;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.thumbnail:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.thumbnail.active {
+  border-color: #13547a;
+  box-shadow: 0 0 0 2px rgba(19, 84, 122, 0.3);
+}
+
+/* Product Info Styling */
+.product-info {
+  padding: 0 1rem;
+}
+
+.product-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #343a40;
+}
+
+.product-category {
+  color: #6c757d;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+}
+
+.product-price {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #13547a;
+  margin-bottom: 1rem;
+}
+
+.product-description {
+  margin-bottom: 1.5rem;
+  color: #495057;
+  line-height: 1.6;
+}
+
+/* Product Options */
+.product-options {
+  margin-bottom: 2rem;
+}
+
+.option-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #343a40;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  max-width: 150px;
+}
+
+.quantity-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quantity-btn:hover {
+  background-color: #e9ecef;
+}
+
+.quantity-input {
+  width: 60px;
+  height: 36px;
+  text-align: center;
+  border: 1px solid #dee2e6;
+  border-left: none;
+  border-right: none;
+}
+
+.color-options, .size-options {
+  display: flex;
+  gap: 10px;
+  margin-top: 0.5rem;
+}
+
+.color-option, .size-option {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.color-option:hover, .size-option:hover {
+  transform: scale(1.1);
+}
+
+.color-option.active, .size-option.active {
+  border-color: #13547a;
+  box-shadow: 0 0 0 2px rgba(19, 84, 122, 0.3);
+}
+
+.color-black {
+  background-color: #212529;
+}
+
+.color-red {
+  background-color: #dc3545;
+}
+
+.color-blue {
+  background-color: #0d6efd;
+}
+
+.size-option {
+  width: auto;
+  min-width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0 10px;
+}
+
+/* Stock Status */
+.stock-status {
+  margin-bottom: 1.5rem;
+}
+
+.in-stock {
+  background: linear-gradient(135deg, #00b09b, #96c93d);
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.out-of-stock {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Action Buttons */
+.product-actions-btn {
+  display: flex;
+  gap: 15px;
+}
+
+.add-to-cart-btn {
+  background: white;
+  color: #13547a;
+  border: 2px solid #13547a;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-to-cart-btn:hover {
+  background: #13547a;
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px rgba(19, 84, 122, 0.2);
+}
+
+.buy-now-btn {
+  background: linear-gradient(135deg, #13547a, #80d0c7);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.buy-now-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(19, 84, 122, 0.3);
+}
+
+/* Product Details Tabs */
+.product-tabs {
+  margin-top: 3rem;
+}
+
+.tab-content {
+  padding: 2rem;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  border-radius: 0 0 5px 5px;
+}
+
+/* Related Products */
+.related-products {
+  margin-top: 4rem;
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 2rem;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(135deg, #13547a, #80d0c7);
+  border-radius: 2px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .product-title {
+    font-size: 1.5rem;
+  }
+  
+  .product-price {
+    font-size: 1.5rem;
+  }
+  
+  .product-actions {
+    flex-direction: column;
+  }
+  
+  .iiz__img {
+    max-height: 350px;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}

@@ -1,0 +1,640 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Row, 
+  Col, 
+  Card, 
+  Badge, 
+  Button,
+  ProgressBar,
+  Spinner,
+  Alert
+} from 'react-bootstrap';
+import { 
+  BsCurrencyDollar,
+  BsCart3,
+  BsPeople,
+  BsBox,
+  BsArrowUp,
+  BsArrowDown
+} from 'react-icons/bs';
+import { Line, Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler } from 'chart.js';
+import { adminApi } from '../../services/api';
+import DataTable from 'react-data-table-component';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+const Dashboard = () => {
+  // State for dashboard data
+  const [dashboardStats, setDashboardStats] = useState({
+    totalRevenue: 0,
+    revenueChange: 0,
+    totalOrders: 0,
+    ordersChange: 0,
+    totalCustomers: 0,
+    customersChange: 0,
+    totalProducts: 0,
+    productsChange: 0
+  });
+  
+  const [salesData, setSalesData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: 'Sales',
+        data: [],
+        borderColor: '#4b6cb7',
+        backgroundColor: 'rgba(75, 108, 183, 0.1)',
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  });
+
+  const [categoryData, setCategoryData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: 'Sales by Category',
+        data: [],
+        backgroundColor: [
+          '#4b6cb7',
+          '#43a047',
+          '#ff9800',
+          '#e53935',
+          '#9c27b0',
+        ],
+        borderWidth: 0,
+      },
+    ],
+  });
+
+  // State for recent orders and top products
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
+  
+  // Loading and error states
+  const [loading, setLoading] = useState({
+    stats: false,
+    sales: false,
+    categories: false,
+    orders: false,
+    products: false
+  });
+  
+  const [error, setError] = useState({
+    stats: null,
+    sales: null,
+    categories: null,
+    orders: null,
+    products: null
+  });
+  
+  // State for period selection
+  const [salesPeriod, setSalesPeriod] = useState('monthly');
+  const [salesYear, setSalesYear] = useState(new Date().getFullYear());
+  
+  // Fetch dashboard stats
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      setLoading(prev => ({ ...prev, stats: true }));
+      try {
+        const response = await adminApi.getDashboardStats();
+        setDashboardStats(response.data);
+        setLoading(prev => ({ ...prev, stats: false }));
+      } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+        setError(prev => ({ ...prev, stats: 'Failed to load dashboard statistics' }));
+        setLoading(prev => ({ ...prev, stats: false }));
+      }
+    };
+    
+    fetchDashboardStats();
+  }, []);
+  
+  // Fetch sales data
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      setLoading(prev => ({ ...prev, sales: true }));
+      try {
+        const response = await adminApi.getSalesData(salesPeriod, salesYear);
+        setSalesData(response.data);
+        setLoading(prev => ({ ...prev, sales: false }));
+      } catch (err) {
+        console.error('Error fetching sales data:', err);
+        setError(prev => ({ ...prev, sales: 'Failed to load sales data' }));
+        setLoading(prev => ({ ...prev, sales: false }));
+      }
+    };
+    
+    fetchSalesData();
+  }, [salesPeriod, salesYear]);
+  
+  // Fetch category data
+  useEffect(() => {
+    const fetchCategoryData = async () => {
+      setLoading(prev => ({ ...prev, categories: true }));
+      try {
+        const response = await adminApi.getCategorySales();
+        
+        // Transform API response to chart-friendly format
+        const labels = response.data.map(item => item.categoryName);
+        const data = response.data.map(item => item.totalSales);
+        
+        setCategoryData({
+          labels,
+          datasets: [
+            {
+              label: 'Sales by Category',
+              data,
+              backgroundColor: [
+                '#4b6cb7',
+                '#43a047',
+                '#ff9800',
+                '#e53935',
+                '#9c27b0',
+                '#3f51b5',
+                '#00bcd4',
+                '#8bc34a',
+                '#ffc107',
+                '#795548'
+              ],
+              borderWidth: 0,
+            },
+          ],
+        });
+        
+        setLoading(prev => ({ ...prev, categories: false }));
+      } catch (err) {
+        console.error('Error fetching category data:', err);
+        setError(prev => ({ ...prev, categories: 'Failed to load category data' }));
+        setLoading(prev => ({ ...prev, categories: false }));
+      }
+    };
+    
+    fetchCategoryData();
+  }, []);
+  
+  // Fetch recent orders
+  useEffect(() => {
+    const fetchRecentOrders = async () => {
+      setLoading(prev => ({ ...prev, orders: true }));
+      try {
+        const response = await adminApi.getRecentOrders();
+        setRecentOrders(response.data);
+        setLoading(prev => ({ ...prev, orders: false }));
+      } catch (err) {
+        console.error('Error fetching recent orders:', err);
+        setError(prev => ({ ...prev, orders: 'Failed to load recent orders' }));
+        setLoading(prev => ({ ...prev, orders: false }));
+      }
+    };
+    
+    fetchRecentOrders();
+  }, []);
+  
+  // Fetch top products
+  useEffect(() => {
+    const fetchTopProducts = async () => {
+      setLoading(prev => ({ ...prev, products: true }));
+      try {
+        const response = await adminApi.getTopProducts();
+        setTopProducts(response.data);
+        setLoading(prev => ({ ...prev, products: false }));
+      } catch (err) {
+        console.error('Error fetching top products:', err);
+        setError(prev => ({ ...prev, products: 'Failed to load top products' }));
+        setLoading(prev => ({ ...prev, products: false }));
+      }
+    };
+    
+    fetchTopProducts();
+  }, []);
+  
+  // Chart options
+  const salesChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          borderDash: [2],
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+      },
+    },
+  };
+  
+  const categoryChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          boxWidth: 12,
+        },
+      },
+    },
+  };
+  
+  // Status badge renderer
+  const renderStatusBadge = (status) => {
+    let variant = 'secondary';
+    
+    switch(status.toLowerCase()) {
+      case 'completed':
+      case 'delivered':
+      case 'paid':
+        variant = 'success';
+        break;
+      case 'processing':
+      case 'pending':
+        variant = 'warning';
+        break;
+      case 'cancelled':
+      case 'failed':
+        variant = 'danger';
+        break;
+      default:
+        variant = 'secondary';
+    }
+    
+    return <Badge bg={variant}>{status}</Badge>;
+  };
+
+  return (
+    <div className="dashboard-container p-4">
+      <h2 className="mb-4">Dashboard</h2>
+      
+      {/* Stats Cards */}
+      <Row className="mb-4">
+        <Col md={3}>
+          <Card className="h-100">
+            <Card.Body>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="stats-icon bg-primary text-white rounded-circle p-3">
+                  <BsCurrencyDollar size={24} />
+                </div>
+                <div>
+                  {dashboardStats.revenueChange > 0 ? (
+                    <Badge bg="success" className="d-flex align-items-center">
+                      <BsArrowUp className="me-1" />
+                      {dashboardStats.revenueChange}%
+                    </Badge>
+                  ) : (
+                    <Badge bg="danger" className="d-flex align-items-center">
+                      <BsArrowDown className="me-1" />
+                      {Math.abs(dashboardStats.revenueChange)}%
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <h6 className="text-muted">Total Revenue</h6>
+              {loading.stats ? (
+                <Spinner animation="border" size="sm" />
+              ) : (
+                <h3>${dashboardStats.totalRevenue.toLocaleString()}</h3>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={3}>
+          <Card className="h-100">
+            <Card.Body>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="stats-icon bg-success text-white rounded-circle p-3">
+                  <BsCart3 size={24} />
+                </div>
+                <div>
+                  {dashboardStats.ordersChange > 0 ? (
+                    <Badge bg="success" className="d-flex align-items-center">
+                      <BsArrowUp className="me-1" />
+                      {dashboardStats.ordersChange}%
+                    </Badge>
+                  ) : (
+                    <Badge bg="danger" className="d-flex align-items-center">
+                      <BsArrowDown className="me-1" />
+                      {Math.abs(dashboardStats.ordersChange)}%
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <h6 className="text-muted">Total Orders</h6>
+              {loading.stats ? (
+                <Spinner animation="border" size="sm" />
+              ) : (
+                <h3>{dashboardStats.totalOrders.toLocaleString()}</h3>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={3}>
+          <Card className="h-100">
+            <Card.Body>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="stats-icon bg-warning text-white rounded-circle p-3">
+                  <BsPeople size={24} />
+                </div>
+                <div>
+                  {dashboardStats.customersChange > 0 ? (
+                    <Badge bg="success" className="d-flex align-items-center">
+                      <BsArrowUp className="me-1" />
+                      {dashboardStats.customersChange}%
+                    </Badge>
+                  ) : (
+                    <Badge bg="danger" className="d-flex align-items-center">
+                      <BsArrowDown className="me-1" />
+                      {Math.abs(dashboardStats.customersChange)}%
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <h6 className="text-muted">Total Customers</h6>
+              {loading.stats ? (
+                <Spinner animation="border" size="sm" />
+              ) : (
+                <h3>{dashboardStats.totalCustomers.toLocaleString()}</h3>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={3}>
+          <Card className="h-100">
+            <Card.Body>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="stats-icon bg-info text-white rounded-circle p-3">
+                  <BsBox size={24} />
+                </div>
+                <div>
+                  {dashboardStats.productsChange > 0 ? (
+                    <Badge bg="success" className="d-flex align-items-center">
+                      <BsArrowUp className="me-1" />
+                      {dashboardStats.productsChange}%
+                    </Badge>
+                  ) : (
+                    <Badge bg="danger" className="d-flex align-items-center">
+                      <BsArrowDown className="me-1" />
+                      {Math.abs(dashboardStats.productsChange)}%
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <h6 className="text-muted">Total Products</h6>
+              {loading.stats ? (
+                <Spinner animation="border" size="sm" />
+              ) : (
+                <h3>{dashboardStats.totalProducts.toLocaleString()}</h3>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      
+      {/* Charts Row */}
+      <Row className="mb-4">
+        <Col md={8}>
+          <Card className="h-100">
+            <Card.Body>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h5 className="card-title">Sales Overview</h5>
+                <div>
+                  <Button 
+                    variant={salesPeriod === 'daily' ? 'primary' : 'outline-primary'} 
+                    size="sm" 
+                    className="me-2"
+                    onClick={() => setSalesPeriod('daily')}
+                  >
+                    Daily
+                  </Button>
+                  <Button 
+                    variant={salesPeriod === 'weekly' ? 'primary' : 'outline-primary'} 
+                    size="sm" 
+                    className="me-2"
+                    onClick={() => setSalesPeriod('weekly')}
+                  >
+                    Weekly
+                  </Button>
+                  <Button 
+                    variant={salesPeriod === 'monthly' ? 'primary' : 'outline-primary'} 
+                    size="sm"
+                    onClick={() => setSalesPeriod('monthly')}
+                  >
+                    Monthly
+                  </Button>
+                </div>
+              </div>
+              
+              {error.sales && (
+                <Alert variant="danger">{error.sales}</Alert>
+              )}
+              
+              {loading.sales ? (
+                <div className="text-center py-5">
+                  <Spinner animation="border" />
+                </div>
+              ) : (
+                <div style={{ height: '300px' }}>
+                  <Line data={salesData} options={salesChartOptions} />
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={4}>
+          <Card className="h-100">
+            <Card.Body>
+              <h5 className="card-title mb-4">Sales by Category</h5>
+              
+              {error.categories && (
+                <Alert variant="danger">{error.categories}</Alert>
+              )}
+              
+              {loading.categories ? (
+                <div className="text-center py-5">
+                  <Spinner animation="border" />
+                </div>
+              ) : (
+                <div style={{ height: '300px' }}>
+                  <Doughnut data={categoryData} options={categoryChartOptions} />
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      
+      {/* Recent Orders & Top Products */}
+      <Row>
+        <Col md={6}>
+          <Card className="mb-4">
+            <Card.Body>
+              <h5 className="card-title mb-4">Recent Orders</h5>
+              
+              {error.orders && (
+                <Alert variant="danger">{error.orders}</Alert>
+              )}
+              
+              {loading.orders ? (
+                <div className="text-center py-3">
+                  <Spinner animation="border" />
+                </div>
+              ) : (
+                <DataTable
+                  columns={[
+                    {
+                      name: 'Order ID',
+                      selector: row => row.orderId,
+                      sortable: true,
+                      width: '120px',
+                    },
+                    {
+                      name: 'Customer',
+                      selector: row => row.customerName,
+                      sortable: true,
+                    },
+                    {
+                      name: 'Amount',
+                      selector: row => row.totalAmount,
+                      sortable: true,
+                      format: row => `$${row.totalAmount.toFixed(2)}`,
+                      right: true,
+                    },
+                    {
+                      name: 'Status',
+                      selector: row => row.status,
+                      sortable: true,
+                      cell: row => renderStatusBadge(row.status),
+                    },
+                    {
+                      name: 'Date',
+                      selector: row => row.orderDate,
+                      sortable: true,
+                      format: row => new Date(row.orderDate).toLocaleDateString(),
+                    },
+                  ]}
+                  data={recentOrders}
+                  pagination
+                  paginationPerPage={5}
+                  paginationRowsPerPageOptions={[5, 10, 15]}
+                  highlightOnHover
+                  pointerOnHover
+                  responsive
+                  noDataComponent="No recent orders found"
+                />
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={6}>
+          <Card>
+            <Card.Body>
+              <h5 className="card-title mb-4">Top Products</h5>
+              
+              {error.products && (
+                <Alert variant="danger">{error.products}</Alert>
+              )}
+              
+              {loading.products ? (
+                <div className="text-center py-3">
+                  <Spinner animation="border" />
+                </div>
+              ) : (
+                <DataTable
+                  columns={[
+                    {
+                      name: '#',
+                      cell: (row, index) => index + 1,
+                      width: '50px',
+                    },
+                    {
+                      name: 'Product Name',
+                      selector: row => row.name,
+                      sortable: true,
+                    },
+                    {
+                      name: 'Category',
+                      selector: row => row.category,
+                      sortable: true,
+                    },
+                    {
+                      name: 'Stock',
+                      selector: row => row.stock,
+                      sortable: true,
+                      right: true,
+                    },
+                    {
+                      name: 'Sold',
+                      selector: row => row.sold,
+                      sortable: true,
+                      right: true,
+                    },
+                    {
+                      name: 'Status',
+                      cell: row => (
+                        <div className="d-flex align-items-center">
+                          <ProgressBar 
+                            now={Math.min(100, (row.stock / (row.stock + row.sold)) * 100)} 
+                            variant={row.stock < 30 ? "danger" : row.stock < 50 ? "warning" : "success"}
+                            style={{ width: '100px', height: '8px' }}
+                            className="me-2"
+                          />
+                          <span className="small">
+                            {row.stock < 30 ? "Low Stock" : row.stock < 50 ? "Medium" : "In Stock"}
+                          </span>
+                        </div>
+                      ),
+                      width: '200px',
+                    },
+                  ]}
+                  data={topProducts}
+                  pagination
+                  paginationPerPage={5}
+                  paginationRowsPerPageOptions={[5, 10, 15]}
+                  highlightOnHover
+                  pointerOnHover
+                  responsive
+                  noDataComponent="No products found"
+                />
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </div>
+  );
+};
+
+export default Dashboard;

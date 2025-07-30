@@ -14,7 +14,7 @@ import {
   InputGroup,
   Spinner,
 } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+// import { useNavigate, useParams } from "react-router-dom";
 import {
   BsChat,
   BsPerson,
@@ -44,7 +44,7 @@ const AdminMessages = () => {
   const [activeTab, setActiveTab] = useState("customers");
   const [usersLoading, setUsersLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // const [error, setError] = useState(null);
 
   // Refs for scrolling and intervals
   const messagesEndRef = useRef(null);
@@ -54,8 +54,8 @@ const AdminMessages = () => {
 
   // Get current admin ID
   const currentUserId = JSON.parse(localStorage.getItem("user"))?.id;
-  const navigate = useNavigate();
-  const { userId } = useParams(); // In case we navigate from a user page
+  // const navigate = useNavigate();
+  // const { userId } = useParams(); // In case we navigate from a user page
 
   // Get auth token
   const getAuthToken = () => {

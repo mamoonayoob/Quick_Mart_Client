@@ -31,8 +31,8 @@ let socket = null;
 let reconnectTimer = null;
 let RECONNECT_DELAY = 3000; // 3 seconds initial delay
 const MAX_RECONNECT_DELAY = 30000; // 30 seconds maximum delay
-const RECONNECT_FACTOR = 1.5; // Exponential backoff factor
-let reconnectAttempts = 0; // Track number of reconnect attempts
+// const RECONNECT_FACTOR = 1.5; // Exponential backoff factor
+// let reconnectAttempts = 0; // Track number of reconnect attempts
 const listeners = new Map();
 
 /**
@@ -115,7 +115,7 @@ const initializeSocketIO = (userId, token) => {
       console.log("Socket.IO connection established with ID:", socket.id);
 
       // Reset reconnect attempts on successful connection
-      reconnectAttempts = 0;
+      // reconnectAttempts = 0;
 
       // Reset reconnect delay
       RECONNECT_DELAY = 3000;
@@ -157,7 +157,7 @@ const initializeSocketIO = (userId, token) => {
 
     socket.on("reconnect", (attemptNumber) => {
       console.log(`Socket.IO reconnected after ${attemptNumber} attempts`);
-      reconnectAttempts = attemptNumber;
+      // reconnectAttempts = attemptNumber;
       notifyListeners("connection", { status: "connected" });
 
       // Re-authenticate after reconnection
@@ -165,7 +165,7 @@ const initializeSocketIO = (userId, token) => {
     });
 
     socket.on("reconnect_attempt", (attemptNumber) => {
-      reconnectAttempts = attemptNumber;
+      // reconnectAttempts = attemptNumber;
       console.log(`Socket.IO reconnect attempt ${attemptNumber}`);
       notifyListeners("connection", {
         status: "reconnecting",

@@ -8,20 +8,17 @@ import {
   Tab, 
   Nav, 
   Alert, 
-  Spinner,
-  InputGroup
-} from 'react-bootstrap';
+  Spinner} from 'react-bootstrap';
 import { 
   BsShieldLock, 
   BsGear, 
   BsBell, 
-  BsEnvelope, 
   BsPerson, 
   BsCheck2Circle,
   BsExclamationTriangle
 } from 'react-icons/bs';
 import { useSelector } from 'react-redux';
-import { adminApi } from '../../services/api';
+// import { adminApi } from '../../services/api';
 
 const Settings = () => {
   // Get user from Redux store

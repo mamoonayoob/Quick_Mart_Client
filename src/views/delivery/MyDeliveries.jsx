@@ -1,16 +1,14 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 import { 
   Card, 
   Row, 
   Col, 
   Badge, 
   Button, 
-  Form, 
   Spinner,
   Alert,
   Modal,
-  Container
 } from 'react-bootstrap';
 import { 
   BsBoxSeam, 
@@ -20,24 +18,20 @@ import {
   BsGeoAlt,
   BsArrowClockwise,
   BsXCircle,
-  BsEye,
-  BsCalendar,
-  BsSearch,
-  BsClock,
-  BsCheckLg
+  // BsEye,
 } from 'react-icons/bs';
 import { toast } from 'react-toastify';
-import DataTable from 'react-data-table-component';
+// import DataTable from 'react-data-table-component';
 import { deliveryApi } from '../../services/api';
 
 const MyDeliveries = () => {
-  const { user } = useSelector((state) => state.auth);
+  // const { user } = useSelector((state) => state.auth);
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  // const [searchTerm] = useState('');
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [selectedDelivery,] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [deliveredOrdersForTable, setDeliveredOrdersForTable] = useState([]);
   
@@ -220,13 +214,13 @@ const MyDeliveries = () => {
     });
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
-  };
+  // const formatCurrency = (amount) => {
+  //   return new Intl.NumberFormat('en-US', {
+  //     style: 'currency',
+  //     currency: 'USD',
+  //     minimumFractionDigits: 2
+  //   }).format(amount);
+  // };
 
   const getStatusConfig = (status) => {
     const configs = {
@@ -248,376 +242,376 @@ const MyDeliveries = () => {
   console.log('📊 Real delivered orders from existing data:', deliveredOrders.length);
   
   // Sort delivered orders by most recent delivery date (descending)
-  const sortedDeliveredOrders = deliveredOrders.sort((a, b) => {
-    const dateA = new Date(a.deliveryTime || a.updatedAt);
-    const dateB = new Date(b.deliveryTime || b.updatedAt);
-    return dateB - dateA; // Most recent first
-  });
+  // const sortedDeliveredOrders = deliveredOrders.sort((a, b) => {
+  //   const dateA = new Date(a.deliveryTime || a.updatedAt);
+  //   const dateB = new Date(b.deliveryTime || b.updatedAt);
+  //   return dateB - dateA; // Most recent first
+  // });
 
   // Filter delivered orders based on search
-  const filteredDeliveredOrders = sortedDeliveredOrders.filter(delivery => {
-    if (!searchTerm) return true;
+  // const filteredDeliveredOrders = sortedDeliveredOrders.filter(delivery => {
+  //   if (!searchTerm) return true;
     
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      delivery.order?.orderNumber?.toLowerCase().includes(searchLower) ||
-      delivery.order?.user?.name?.toLowerCase().includes(searchLower) ||
-      delivery._id?.toLowerCase().includes(searchLower)
-    );
-  });
+  //   const searchLower = searchTerm.toLowerCase();
+  //   return (
+  //     delivery.order?.orderNumber?.toLowerCase().includes(searchLower) ||
+  //     delivery.order?.user?.name?.toLowerCase().includes(searchLower) ||
+  //     delivery._id?.toLowerCase().includes(searchLower)
+  //   );
+  // });
 
   // Delivered Orders Table Columns
-  const deliveredOrdersColumns = [
-    {
-      id: 1,
-      name: 'Order ID',
-      cell: row => (
-        <div>
-          <div className="fw-bold text-primary">
-            #{row.order?.orderNumber || row._id?.slice(-6) || 'N/A'}
-          </div>
-          <small className="text-muted">
-            {new Date(row.order?.createdAt || row.createdAt).toLocaleDateString()}
-          </small>
-        </div>
-      ),
-      sortable: true,
-      width: '140px'
-    },
-    {
-      id: 2,
-      name: 'Customer Name',
-      cell: row => (
-        <div>
-          <div className="fw-bold text-dark">
-            {row.order?.user?.name || 'Unknown Customer'}
-          </div>
-          <small className="text-muted d-flex align-items-center">
-            <BsPhone className="me-1" size={12} />
-            {row.order?.user?.phone || 'No contact'}
-          </small>
-        </div>
-      ),
-      sortable: true,
-      minWidth: '180px'
-    },
-    {
-      id: 3,
-      name: 'Total Amount',
-      cell: row => (
-        <div className="text-center">
-          <div className="fw-bold text-success fs-6">
-            ₹{row.order?.totalPrice?.toLocaleString() || '0'}
-          </div>
-          <small className="text-muted">Order Total</small>
-        </div>
-      ),
-      sortable: true,
-      center: true,
-      width: '140px'
-    },
-    {
-      id: 4,
-      name: 'Date',
-      cell: row => (
-        <div className="text-center">
-          <div className="fw-bold text-dark">
-            {new Date(row.deliveryTime || row.updatedAt).toLocaleDateString()}
-          </div>
-          <small className="text-muted">
-            {new Date(row.deliveryTime || row.updatedAt).toLocaleTimeString()}
-          </small>
-        </div>
-      ),
-      sortable: true,
-      sortFunction: (a, b) => {
-        const dateA = new Date(a.deliveryTime || a.updatedAt);
-        const dateB = new Date(b.deliveryTime || b.updatedAt);
-        return dateB - dateA;
-      },
-      center: true,
-      width: '160px'
-    },
-    {
-      id: 5,
-      name: 'Details',
-      cell: row => (
-        <div className="text-center">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => {
-              setSelectedDelivery(row);
-              setShowDetailModal(true);
-            }}
-            className="px-3"
-          >
-            <BsEye className="me-1" size={14} />
-            View Details
-          </Button>
-        </div>
-      ),
-      center: true,
-      width: '140px',
-      ignoreRowClick: true
-    }
-  ];
+  // const deliveredOrdersColumns = [
+  //   {
+  //     id: 1,
+  //     name: 'Order ID',
+  //     cell: row => (
+  //       <div>
+  //         <div className="fw-bold text-primary">
+  //           #{row.order?.orderNumber || row._id?.slice(-6) || 'N/A'}
+  //         </div>
+  //         <small className="text-muted">
+  //           {new Date(row.order?.createdAt || row.createdAt).toLocaleDateString()}
+  //         </small>
+  //       </div>
+  //     ),
+  //     sortable: true,
+  //     width: '140px'
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'Customer Name',
+  //     cell: row => (
+  //       <div>
+  //         <div className="fw-bold text-dark">
+  //           {row.order?.user?.name || 'Unknown Customer'}
+  //         </div>
+  //         <small className="text-muted d-flex align-items-center">
+  //           <BsPhone className="me-1" size={12} />
+  //           {row.order?.user?.phone || 'No contact'}
+  //         </small>
+  //       </div>
+  //     ),
+  //     sortable: true,
+  //     minWidth: '180px'
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Total Amount',
+  //     cell: row => (
+  //       <div className="text-center">
+  //         <div className="fw-bold text-success fs-6">
+  //           ₹{row.order?.totalPrice?.toLocaleString() || '0'}
+  //         </div>
+  //         <small className="text-muted">Order Total</small>
+  //       </div>
+  //     ),
+  //     sortable: true,
+  //     center: true,
+  //     width: '140px'
+  //   },
+  //   {
+  //     id: 4,
+  //     name: 'Date',
+  //     cell: row => (
+  //       <div className="text-center">
+  //         <div className="fw-bold text-dark">
+  //           {new Date(row.deliveryTime || row.updatedAt).toLocaleDateString()}
+  //         </div>
+  //         <small className="text-muted">
+  //           {new Date(row.deliveryTime || row.updatedAt).toLocaleTimeString()}
+  //         </small>
+  //       </div>
+  //     ),
+  //     sortable: true,
+  //     sortFunction: (a, b) => {
+  //       const dateA = new Date(a.deliveryTime || a.updatedAt);
+  //       const dateB = new Date(b.deliveryTime || b.updatedAt);
+  //       return dateB - dateA;
+  //     },
+  //     center: true,
+  //     width: '160px'
+  //   },
+  //   {
+  //     id: 5,
+  //     name: 'Details',
+  //     cell: row => (
+  //       <div className="text-center">
+  //         <Button
+  //           variant="primary"
+  //           size="sm"
+  //           onClick={() => {
+  //             setSelectedDelivery(row);
+  //             setShowDetailModal(true);
+  //           }}
+  //           className="px-3"
+  //         >
+  //           <BsEye className="me-1" size={14} />
+  //           View Details
+  //         </Button>
+  //       </div>
+  //     ),
+  //     center: true,
+  //     width: '140px',
+  //     ignoreRowClick: true
+  //   }
+  // ];
 
   // Legacy filter for all deliveries (keeping for compatibility)
-  const filteredDeliveries = deliveries.filter(delivery => {
-    if (!searchTerm) return true;
+  // const filteredDeliveries = deliveries.filter(delivery => {
+  //   if (!searchTerm) return true;
     
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      delivery._id?.toLowerCase().includes(searchLower) ||
-      delivery.order?.orderNumber?.toLowerCase().includes(searchLower) ||
-      delivery.order?.user?.name?.toLowerCase().includes(searchLower) ||
-      delivery.status?.toLowerCase().includes(searchLower)
-    );
-  });
+  //   const searchLower = searchTerm.toLowerCase();
+  //   return (
+  //     delivery._id?.toLowerCase().includes(searchLower) ||
+  //     delivery.order?.orderNumber?.toLowerCase().includes(searchLower) ||
+  //     delivery.order?.user?.name?.toLowerCase().includes(searchLower) ||
+  //     delivery.status?.toLowerCase().includes(searchLower)
+  //   );
+  // });
 
   // Filter only completed/delivered orders for the iframe table
-  const completedDeliveries = deliveries.filter(delivery => 
-    delivery.status === 'delivered' || delivery.status === 'completed'
-  );
+  // const completedDeliveries = deliveries.filter(delivery => 
+  //   delivery.status === 'delivered' || delivery.status === 'completed'
+  // );
 
-  const columns = [
-    {
-      name: '#',
-      cell: (row, index) => (
-        <div className="fw-bold text-primary">
-          {index + 1}
-        </div>
-      ),
-      width: '60px'
-    },
-    {
-      name: 'Order Details',
-      cell: row => (
-        <div>
-          <div className="fw-bold">{row.order?.orderNumber || 'N/A'}</div>
-          <small className="text-muted">
-            {row.order?.user?.name || 'Unknown Customer'}
-          </small>
-        </div>
-      ),
-      sortable: true,
-      minWidth: '150px'
-    },
-    {
-      name: 'Address',
-      cell: row => (
-        <div>
-          {row.order?.shippingAddress ? (
-            <>
-              <div className="fw-bold">{row.order.shippingAddress.street}</div>
-              <small className="text-muted d-flex align-items-center">
-                <BsGeoAlt className="me-1" size={12} />
-                {row.order.shippingAddress.city}, {row.order.shippingAddress.state}
-              </small>
-            </>
-          ) : (
-            <span className="text-muted">Address not available</span>
-          )}
-        </div>
-      ),
-      minWidth: '180px'
-    },
-    {
-      name: 'Amount',
-      cell: row => (
-        <div className="text-center">
-          <div className="fw-bold text-success">
-            {formatCurrency(row.order?.totalPrice || 0)}
-          </div>
-          <small className="text-muted">Order Total</small>
-        </div>
-      ),
-      center: true,
-      width: '120px'
-    },
-    {
-      name: 'Status',
-      cell: row => {
-        const statusConfig = getStatusConfig(row.status);
-        return (
-          <Badge bg={statusConfig.variant}>
-            {statusConfig.text}
-          </Badge>
-        );
-      },
-      center: true,
-      width: '120px'
-    },
-    {
-      name: 'Date',
-      cell: row => (
-        <div className="text-center">
-          <div className="fw-bold">
-            {new Date(row.createdAt).toLocaleDateString()}
-          </div>
-          <small className="text-muted">
-            {new Date(row.createdAt).toLocaleTimeString()}
-          </small>
-        </div>
-      ),
-      sortable: true,
-      width: '120px'
-    },
-    {
-      name: 'Contact',
-      cell: row => (
-        <div className="text-center">
-          {row.order?.user?.phone ? (
-            <Button
-              variant="outline-success"
-              size="sm"
-              title="Call Customer"
-              onClick={() => {
-                window.open(`tel:${row.order.user.phone}`, '_self');
-                toast.success('Opening phone dialer...');
-              }}
-            >
-              <BsPhone className="me-1" size={14} />
-              Call
-            </Button>
-          ) : (
-            <span className="text-muted small">No contact</span>
-          )}
-        </div>
-      ),
-      width: '100px',
-      center: true
-    },
-    {
-      name: 'Actions',
-      cell: row => (
-        <Button
-          variant="outline-primary"
-          size="sm"
-          title="View Details"
-          onClick={() => {
-            setSelectedDelivery(row);
-            setShowDetailModal(true);
-          }}
-        >
-          <BsEye className="me-1" size={14} />
-          View
-        </Button>
-      ),
-      width: '100px',
-      center: true
-    },
-    {
-      name: 'Customer',
-      cell: row => (
-        <div>
-          <div className="fw-bold text-dark">
-            {row.order?.user?.name || 'Unknown Customer'}
-          </div>
-          <small className="text-muted d-flex align-items-center">
-            <BsPhone className="me-1" size={12} />
-            {row.order?.user?.phone || 'No contact'}
-          </small>
-        </div>
-      ),
-      sortable: true,
-      width: '160px'
-    },
-    {
-      name: 'Address',
-      cell: row => (
-        <div>
-          {row.order?.shippingAddress ? (
-            <>
-              <div className="fw-bold text-dark">
-                {row.order.shippingAddress.street}
-              </div>
-              <small className="text-muted d-flex align-items-center">
-                <BsGeoAlt className="me-1" size={12} />
-                {row.order.shippingAddress.city}, {row.order.shippingAddress.state}
-              </small>
-            </>
-          ) : (
-            <span className="text-muted">Address not available</span>
-          )}
-        </div>
-      ),
-      minWidth: '180px'
-    },
-    {
-      name: 'Amount',
-      cell: row => (
-        <div className="text-center">
-          <div className="fw-bold text-success">
-            {formatCurrency(row.order?.totalPrice || 0)}
-          </div>
-          <small className="text-muted">Order Total</small>
-        </div>
-      ),
-      center: true,
-      width: '120px'
-    },
-    {
-      name: 'Status',
-      cell: row => {
-        const config = getStatusConfig(row.status);
-        const IconComponent = config.icon;
+  // const columns = [
+  //   {
+  //     name: '#',
+  //     cell: (row, index) => (
+  //       <div className="fw-bold text-primary">
+  //         {index + 1}
+  //       </div>
+  //     ),
+  //     width: '60px'
+  //   },
+  //   {
+  //     name: 'Order Details',
+  //     cell: row => (
+  //       <div>
+  //         <div className="fw-bold">{row.order?.orderNumber || 'N/A'}</div>
+  //         <small className="text-muted">
+  //           {row.order?.user?.name || 'Unknown Customer'}
+  //         </small>
+  //       </div>
+  //     ),
+  //     sortable: true,
+  //     minWidth: '150px'
+  //   },
+  //   {
+  //     name: 'Address',
+  //     cell: row => (
+  //       <div>
+  //         {row.order?.shippingAddress ? (
+  //           <>
+  //             <div className="fw-bold">{row.order.shippingAddress.street}</div>
+  //             <small className="text-muted d-flex align-items-center">
+  //               <BsGeoAlt className="me-1" size={12} />
+  //               {row.order.shippingAddress.city}, {row.order.shippingAddress.state}
+  //             </small>
+  //           </>
+  //         ) : (
+  //           <span className="text-muted">Address not available</span>
+  //         )}
+  //       </div>
+  //     ),
+  //     minWidth: '180px'
+  //   },
+  //   {
+  //     name: 'Amount',
+  //     cell: row => (
+  //       <div className="text-center">
+  //         <div className="fw-bold text-success">
+  //           {formatCurrency(row.order?.totalPrice || 0)}
+  //         </div>
+  //         <small className="text-muted">Order Total</small>
+  //       </div>
+  //     ),
+  //     center: true,
+  //     width: '120px'
+  //   },
+  //   {
+  //     name: 'Status',
+  //     cell: row => {
+  //       const statusConfig = getStatusConfig(row.status);
+  //       return (
+  //         <Badge bg={statusConfig.variant}>
+  //           {statusConfig.text}
+  //         </Badge>
+  //       );
+  //     },
+  //     center: true,
+  //     width: '120px'
+  //   },
+  //   {
+  //     name: 'Date',
+  //     cell: row => (
+  //       <div className="text-center">
+  //         <div className="fw-bold">
+  //           {new Date(row.createdAt).toLocaleDateString()}
+  //         </div>
+  //         <small className="text-muted">
+  //           {new Date(row.createdAt).toLocaleTimeString()}
+  //         </small>
+  //       </div>
+  //     ),
+  //     sortable: true,
+  //     width: '120px'
+  //   },
+  //   {
+  //     name: 'Contact',
+  //     cell: row => (
+  //       <div className="text-center">
+  //         {row.order?.user?.phone ? (
+  //           <Button
+  //             variant="outline-success"
+  //             size="sm"
+  //             title="Call Customer"
+  //             onClick={() => {
+  //               window.open(`tel:${row.order.user.phone}`, '_self');
+  //               toast.success('Opening phone dialer...');
+  //             }}
+  //           >
+  //             <BsPhone className="me-1" size={14} />
+  //             Call
+  //           </Button>
+  //         ) : (
+  //           <span className="text-muted small">No contact</span>
+  //         )}
+  //       </div>
+  //     ),
+  //     width: '100px',
+  //     center: true
+  //   },
+  //   {
+  //     name: 'Actions',
+  //     cell: row => (
+  //       <Button
+  //         variant="outline-primary"
+  //         size="sm"
+  //         title="View Details"
+  //         onClick={() => {
+  //           setSelectedDelivery(row);
+  //           setShowDetailModal(true);
+  //         }}
+  //       >
+  //         <BsEye className="me-1" size={14} />
+  //         View
+  //       </Button>
+  //     ),
+  //     width: '100px',
+  //     center: true
+  //   },
+  //   {
+  //     name: 'Customer',
+  //     cell: row => (
+  //       <div>
+  //         <div className="fw-bold text-dark">
+  //           {row.order?.user?.name || 'Unknown Customer'}
+  //         </div>
+  //         <small className="text-muted d-flex align-items-center">
+  //           <BsPhone className="me-1" size={12} />
+  //           {row.order?.user?.phone || 'No contact'}
+  //         </small>
+  //       </div>
+  //     ),
+  //     sortable: true,
+  //     width: '160px'
+  //   },
+  //   {
+  //     name: 'Address',
+  //     cell: row => (
+  //       <div>
+  //         {row.order?.shippingAddress ? (
+  //           <>
+  //             <div className="fw-bold text-dark">
+  //               {row.order.shippingAddress.street}
+  //             </div>
+  //             <small className="text-muted d-flex align-items-center">
+  //               <BsGeoAlt className="me-1" size={12} />
+  //               {row.order.shippingAddress.city}, {row.order.shippingAddress.state}
+  //             </small>
+  //           </>
+  //         ) : (
+  //           <span className="text-muted">Address not available</span>
+  //         )}
+  //       </div>
+  //     ),
+  //     minWidth: '180px'
+  //   },
+  //   {
+  //     name: 'Amount',
+  //     cell: row => (
+  //       <div className="text-center">
+  //         <div className="fw-bold text-success">
+  //           {formatCurrency(row.order?.totalPrice || 0)}
+  //         </div>
+  //         <small className="text-muted">Order Total</small>
+  //       </div>
+  //     ),
+  //     center: true,
+  //     width: '120px'
+  //   },
+  //   {
+  //     name: 'Status',
+  //     cell: row => {
+  //       const config = getStatusConfig(row.status);
+  //       const IconComponent = config.icon;
         
-        return (
-          <div className="text-center">
-            <Badge 
-              bg={config.variant}
-              className="d-flex align-items-center justify-content-center"
-              style={{ 
-                minWidth: '100px',
-                padding: '0.5rem 0.75rem',
-                fontSize: '0.75rem',
-                fontWeight: '600'
-              }}
-            >
-              <IconComponent className="me-1" size={12} />
-              {config.text}
-            </Badge>
-          </div>
-        );
-      },
-      sortable: true,
-      width: '140px'
-    },
-    {
-      name: 'Actions',
-      cell: row => (
-        <div className="text-center">
-          <Button
-            variant="outline-primary"
-            size="sm"
-            onClick={() => {
-              setSelectedDelivery(row);
-              setShowDetailModal(true);
-            }}
-            className="me-2"
-          >
-            <BsEye className="me-1" size={12} />
-            View
-          </Button>
-        </div>
-      ),
-      width: '100px',
-      center: true
-    }
-  ];
+  //       return (
+  //         <div className="text-center">
+  //           <Badge 
+  //             bg={config.variant}
+  //             className="d-flex align-items-center justify-content-center"
+  //             style={{ 
+  //               minWidth: '100px',
+  //               padding: '0.5rem 0.75rem',
+  //               fontSize: '0.75rem',
+  //               fontWeight: '600'
+  //             }}
+  //           >
+  //             <IconComponent className="me-1" size={12} />
+  //             {config.text}
+  //           </Badge>
+  //         </div>
+  //       );
+  //     },
+  //     sortable: true,
+  //     width: '140px'
+  //   },
+  //   {
+  //     name: 'Actions',
+  //     cell: row => (
+  //       <div className="text-center">
+  //         <Button
+  //           variant="outline-primary"
+  //           size="sm"
+  //           onClick={() => {
+  //             setSelectedDelivery(row);
+  //             setShowDetailModal(true);
+  //           }}
+  //           className="me-2"
+  //         >
+  //           <BsEye className="me-1" size={12} />
+  //           View
+  //         </Button>
+  //       </div>
+  //     ),
+  //     width: '100px',
+  //     center: true
+  //   }
+  // ];
 
-  const getTabCounts = () => {
-    const all = deliveries.length;
-    const active = deliveries.filter(d => ['pending', 'assigned', 'picked_up', 'in_transit'].includes(d.status)).length;
-    const completed = deliveries.filter(d => d.status === 'delivered').length;
-    const cancelled = deliveries.filter(d => d.status === 'cancelled').length;
+  // const getTabCounts = () => {
+  //   const all = deliveries.length;
+  //   const active = deliveries.filter(d => ['pending', 'assigned', 'picked_up', 'in_transit'].includes(d.status)).length;
+  //   const completed = deliveries.filter(d => d.status === 'delivered').length;
+  //   const cancelled = deliveries.filter(d => d.status === 'cancelled').length;
     
-    return { all, active, completed, cancelled };
-  };
+  //   return { all, active, completed, cancelled };
+  // };
 
-  const tabCounts = getTabCounts();
+  // const tabCounts = getTabCounts();
 
   return (
     <div className="my-deliveries container mt-2">
@@ -846,7 +840,7 @@ const MyDeliveries = () => {
                             let amount = order.orderValue || 0;
                             
                             // Add indicator if we have stats data
-                            const hasRealData = order.hasStatsData ? '✓' : '';
+                            // const hasRealData = order.hasStatsData ? '✓' : '';
                             
                             // Format status with proper styling
                             const getStatusBadge = (status) => {

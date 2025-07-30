@@ -39,21 +39,21 @@ const WebSocketTester = () => {
     websocketService.connect(user.id, token);
     
     // Add connection status listener
-    const connectionListenerId = 'websocket-tester-connection';
+    // const connectionListenerId = 'websocket-tester-connection';
     websocketService.addEventListener('connection', (data) => {
       setConnected(data.status === 'connected');
       addLogMessage('system', `Connection status: ${data.status}`);
     });
     
     // Add error listener
-    const errorListenerId = 'websocket-tester-error';
+    // const errorListenerId = 'websocket-tester-error';
     websocketService.addEventListener('error', (data) => {
       setError(`WebSocket error: ${data.error?.message || 'Unknown error'}`);
       addLogMessage('error', `Error: ${data.error?.message || 'Unknown error'}`);
     });
     
     // Add message listener for all message types
-    const messageListenerId = 'websocket-tester-message';
+    // const messageListenerId = 'websocket-tester-message';
     websocketService.addEventListener('all', (data) => {
       addLogMessage('received', `Received ${data.event} event: ${JSON.stringify(data.data)}`);
     });

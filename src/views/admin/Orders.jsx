@@ -34,7 +34,7 @@ const Orders = () => {
   // State for search and filter
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [dateRange, setDateRange] = useState({
+  const [dateRange] = useState({
     startDate: '',
     endDate: ''
   });

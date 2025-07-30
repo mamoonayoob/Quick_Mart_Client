@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Container,
-  Row,
-  Col,
   Nav,
   Button,
   Dropdown,

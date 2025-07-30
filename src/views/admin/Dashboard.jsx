@@ -107,7 +107,7 @@ const Dashboard = () => {
   
   // State for period selection
   const [salesPeriod, setSalesPeriod] = useState('monthly');
-  const [salesYear, setSalesYear] = useState(new Date().getFullYear());
+  const [salesYear] = useState(new Date().getFullYear());
   
   // Fetch dashboard stats
   useEffect(() => {

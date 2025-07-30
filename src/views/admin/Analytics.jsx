@@ -13,7 +13,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import { BsCalendar3, BsGraphUp, BsArrowUp, BsArrowDown, BsDownload } from 'react-icons/bs';
+import { BsCalendar3, BsArrowUp, BsArrowDown, BsDownload } from 'react-icons/bs';
 import { adminApi } from '../../services/api';
 
 // Register ChartJS components

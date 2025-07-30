@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   BsSearch,
   BsCart3,
@@ -12,7 +12,6 @@ import {
   BsBellFill,
   BsChatDots,
   BsEnvelope,
-  BsEnvelopeFill,
 } from "react-icons/bs";
 import {
   Navbar,
@@ -192,7 +191,7 @@ const NavigationBar = () => {
   const notificationRef = useRef(null);
   const chatbotRef = useRef(null);
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -224,7 +223,7 @@ const NavigationBar = () => {
   }, []);
 
   // Check if current route is messages
-  const isMessagesRoute = location.pathname.includes("/messages");
+  // const isMessagesRoute = location.pathname.includes("/messages");
 
   // Fetch notifications when component mounts
   useEffect(() => {

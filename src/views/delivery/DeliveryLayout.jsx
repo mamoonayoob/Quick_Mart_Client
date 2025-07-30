@@ -1,33 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 // import '../../../assets/css/DeliveryLayout-fixed.css';
-import { 
-  Container, 
+import {  
   Button, 
   Dropdown,
   Image,
   Form,
-  Nav,
   Badge
 } from 'react-bootstrap';
 import { 
   BsSpeedometer2, 
   BsBox, 
-  BsTruck, 
-  BsPersonCircle, 
   BsBoxArrowRight,
   BsSearch,
   BsBell,
-  BsBellFill,
-  BsGear,
   BsChevronLeft, 
   BsChevronRight,
   BsPerson,
   BsList,
-  BsClockHistory,
-  BsCheckCircle,
-  BsGeoAlt,
-  BsWallet2,
   BsChatDots
 } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';

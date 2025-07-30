@@ -5,8 +5,7 @@ import {
   Row, 
   Col, 
   Form, 
-  Button, 
-  Alert, 
+  Button,  
   Spinner,
   Badge,
   Image
@@ -63,8 +62,6 @@ const DeliveryProfile = () => {
         // Calculate profile statistics from dashboard data
         const totalDeliveries = data.totalDeliveries || 0;
         const completedDeliveries = data.deliveredOrders || 0;
-        const totalRevenue = data.totalRevenue || 0;
-        const todaysRevenue = data.todaysRevenue || 0;
         
         // Use static rating as requested
         const rating = 4.5;

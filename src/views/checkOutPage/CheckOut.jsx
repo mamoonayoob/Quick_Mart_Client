@@ -24,7 +24,7 @@ function CheckOut() {
   // Refs to prevent duplicate API calls
   const cartFetchedRef = useRef(false);
   const profileFetchedRef = useRef(false);
-  const [walletBalance, setWalletBalance] = useState(0);
+  const [ setWalletBalance] = useState(0);
   const [shippingAddress, setShippingAddress] = useState({
     street: "",
     city: "",

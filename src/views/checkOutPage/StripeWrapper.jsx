@@ -11,7 +11,7 @@ const stripePromise = loadStripe('pk_test_51RfS2yPkHyjUMySX2nTBL3UP3F4AmhCyaJQHU
 function StripeWrapper({ onPaymentMethod, orderId, clientSecret: propClientSecret }) {
   const [clientSecret, setClientSecret] = useState(propClientSecret || '');
   const [loading, setLoading] = useState(!propClientSecret);
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
   const toast = useToast();
 
   // Use ref to track component mount state

@@ -57,39 +57,39 @@ export const MessageProvider = ({ children }) => {
   const sendMessage = useCallback(async (messageData) => {
     try {
       let response;
-      
+
       // Determine which service function to use based on recipient type
-      if (messageData.recipientType === 'vendor') {
+      if (messageData.recipientType === "vendor") {
         response = await sendMessageToVendor(
           messageData.orderId,
           messageData.message
         );
-      } else if (messageData.recipientType === 'customer') {
+      } else if (messageData.recipientType === "customer") {
         response = await sendMessageToCustomer(
           messageData.orderId,
           messageData.message
         );
-      } else if (messageData.recipientType === 'admin') {
+      } else if (messageData.recipientType === "admin") {
         response = await sendMessageToAdmin(
           messageData.message,
           messageData.orderId
         );
       }
-      
+
       // Update local state with the new message
       if (response && response.data) {
         const newMessage = response.data.data;
-        
+
         // Add to appropriate message list based on recipient type
-        if (messageData.recipientType === 'vendor') {
-          setCustomerMessages(prev => [newMessage, ...prev]);
-        } else if (messageData.recipientType === 'customer') {
-          setVendorMessages(prev => [newMessage, ...prev]);
-        } else if (messageData.recipientType === 'admin') {
-          setAdminMessages(prev => [newMessage, ...prev]);
+        if (messageData.recipientType === "vendor") {
+          setCustomerMessages((prev) => [newMessage, ...prev]);
+        } else if (messageData.recipientType === "customer") {
+          setVendorMessages((prev) => [newMessage, ...prev]);
+        } else if (messageData.recipientType === "admin") {
+          setAdminMessages((prev) => [newMessage, ...prev]);
         }
       }
-      
+
       return response?.data;
     } catch (error) {
       setError("Failed to send message");

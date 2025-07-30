@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Button, Spinner, Alert } from 'react-bootstrap';
+import { Form, Spinner, Alert } from 'react-bootstrap';
 import { vendorApi } from '../services/api';
 
 /**

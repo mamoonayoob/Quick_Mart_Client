@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
   Row, 
@@ -8,21 +8,14 @@ import {
   Badge, 
   Button, 
   Form, 
-  InputGroup, 
   Spinner,
   Alert,
   Modal,
-  ButtonGroup,
-  Dropdown,
-  ProgressBar
 } from 'react-bootstrap';
 import { 
   BsBoxSeam, 
-  BsCashCoin, 
   BsTruck, 
   BsCheckCircle,
-  BsSearch,
-  BsFilter,
   BsPhone,
   BsEye,
   BsMap,
@@ -31,15 +24,8 @@ import {
   BsCheckLg,
   BsArrowClockwise,
   BsClock,
-  BsCalendarCheck,
-  BsThreeDotsVertical,
   BsArrowUp, 
-  BsArrowDown,
-  BsCurrencyDollar,
   BsDownload,
-  BsCart3,
-  BsPeople,
-  BsBox,
   BsXCircle
 } from 'react-icons/bs';
 import { toast } from 'react-toastify';
@@ -48,15 +34,15 @@ import { deliveryApi } from '../../services/api';
 
 const DeliveryDashboard = () => {
   // Mock data for initial render - will be replaced with API data
-  const mockStats = {
-    totalDeliveries: 0,
-    totalEarnings: 0,
-    todayEarnings: 0,
-    completedDeliveries: 0,
-    pendingDeliveries: 0,
-    inProgressDeliveries: 0,
-    successRate: 0
-  };
+  // const mockStats = {
+  //   totalDeliveries: 0,
+  //   totalEarnings: 0,
+  //   todayEarnings: 0,
+  //   completedDeliveries: 0,
+  //   pendingDeliveries: 0,
+  //   inProgressDeliveries: 0,
+  //   successRate: 0
+  // };
 
   const [stats, setStats] = useState({
     totalDeliveries: 0,
@@ -74,10 +60,10 @@ const DeliveryDashboard = () => {
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [isPolling, setIsPolling] = useState(true);
+  // const [isPolling, setIsPolling] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(null);
   const [showAcceptModal, setShowAcceptModal] = useState(false);
-  const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [selectedDelivery] = useState(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -88,7 +74,7 @@ const DeliveryDashboard = () => {
   const [currentAssignment, setCurrentAssignment] = useState(null);
   const [processingAssignment, setProcessingAssignment] = useState(false);
   const { user } = useSelector((state) => state.auth);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     fetchDashboardData();
@@ -318,91 +304,91 @@ const DeliveryDashboard = () => {
     }
   };
 
-  const getNextStatusOptions = (currentStatus) => {
-    const statusFlow = {
-      'pending': [
-        { value: 'assigned', label: 'Mark as Assigned' },
-        { value: 'cancelled', label: 'Cancel Delivery' }
-      ],
-      'assigned': [
-        { value: 'picked_up', label: 'Mark as Picked Up' },
-        { value: 'cancelled', label: 'Cancel Delivery' }
-      ],
-      'picked_up': [
-        { value: 'in_transit', label: 'Mark as In Transit' },
-        { value: 'delivered', label: 'Mark as Delivered' },
-        { value: 'cancelled', label: 'Cancel Delivery' }
-      ],
-      'in_transit': [
-        { value: 'delivered', label: 'Mark as Delivered' },
-        { value: 'cancelled', label: 'Cancel Delivery' }
-      ]
-    };
+  // const getNextStatusOptions = (currentStatus) => {
+  //   const statusFlow = {
+  //     'pending': [
+  //       { value: 'assigned', label: 'Mark as Assigned' },
+  //       { value: 'cancelled', label: 'Cancel Delivery' }
+  //     ],
+  //     'assigned': [
+  //       { value: 'picked_up', label: 'Mark as Picked Up' },
+  //       { value: 'cancelled', label: 'Cancel Delivery' }
+  //     ],
+  //     'picked_up': [
+  //       { value: 'in_transit', label: 'Mark as In Transit' },
+  //       { value: 'delivered', label: 'Mark as Delivered' },
+  //       { value: 'cancelled', label: 'Cancel Delivery' }
+  //     ],
+  //     'in_transit': [
+  //       { value: 'delivered', label: 'Mark as Delivered' },
+  //       { value: 'cancelled', label: 'Cancel Delivery' }
+  //     ]
+  //   };
     
-    return statusFlow[currentStatus] || [];
-  };
+  //   return statusFlow[currentStatus] || [];
+  // };
 
-  const handleStatusUpdate = async (deliveryId, newStatus) => {
-    if (!deliveryId || !newStatus) return;
+  // const handleStatusUpdate = async (deliveryId, newStatus) => {
+  //   if (!deliveryId || !newStatus) return;
     
-    try {
-      setUpdatingStatus(deliveryId);
+  //   try {
+  //     setUpdatingStatus(deliveryId);
       
-      // Save the current state in case we need to revert
-      const currentDeliveries = [...deliveries];
+  //     // Save the current state in case we need to revert
+  //     const currentDeliveries = [...deliveries];
       
-      // Optimistically update the UI
-      setDeliveries(prevDeliveries => 
-        prevDeliveries.map(delivery => 
-        delivery._id === deliveryId 
-          ? { 
-              ...delivery, 
-              status: newStatus, 
-              updatedAt: new Date().toISOString() 
-            }
-          : delivery
-        )
-      );
+  //     // Optimistically update the UI
+  //     setDeliveries(prevDeliveries => 
+  //       prevDeliveries.map(delivery => 
+  //       delivery._id === deliveryId 
+  //         ? { 
+  //             ...delivery, 
+  //             status: newStatus, 
+  //             updatedAt: new Date().toISOString() 
+  //           }
+  //         : delivery
+  //       )
+  //     );
       
-      // Update the status via API
-      const response = await deliveryApi.updateDeliveryStatus(deliveryId, { status: newStatus });
+  //     // Update the status via API
+  //     const response = await deliveryApi.updateDeliveryStatus(deliveryId, { status: newStatus });
       
-      if (!response.data?.success) {
-        // Revert to previous state if API call fails
-        setDeliveries(currentDeliveries);
-        throw new Error(response.data?.message || 'Failed to update status');
-      }
+  //     if (!response.data?.success) {
+  //       // Revert to previous state if API call fails
+  //       setDeliveries(currentDeliveries);
+  //       throw new Error(response.data?.message || 'Failed to update status');
+  //     }
       
-      // If we get here, the API call was successful
-      toast.success(`Delivery marked as ${newStatus.replace('_', ' ')}`);
+  //     // If we get here, the API call was successful
+  //     toast.success(`Delivery marked as ${newStatus.replace('_', ' ')}`);
       
-      // Update the local state with the server response to ensure consistency
-      setDeliveries(prevDeliveries => 
-        prevDeliveries.map(delivery => 
-          delivery._id === deliveryId
-            ? { ...delivery, ...response.data.data }
-            : delivery
-        )
-      );
+  //     // Update the local state with the server response to ensure consistency
+  //     setDeliveries(prevDeliveries => 
+  //       prevDeliveries.map(delivery => 
+  //         delivery._id === deliveryId
+  //           ? { ...delivery, ...response.data.data }
+  //           : delivery
+  //       )
+  //     );
       
-    } catch (error) {
-      console.error('Error updating delivery status:', error);
-      toast.error(error.response?.data?.message || 'Failed to update delivery status');
-      throw error;
-    } finally {
-      setUpdatingStatus(null);
-    }
-  };
+  //   } catch (error) {
+  //     console.error('Error updating delivery status:', error);
+  //     toast.error(error.response?.data?.message || 'Failed to update delivery status');
+  //     throw error;
+  //   } finally {
+  //     setUpdatingStatus(null);
+  //   }
+  // };
 
   const handleStatusFilterChange = (e) => {
     setStatusFilter(e.target.value);
   };
 
   
-  const handleAcceptDelivery = (delivery) => {
-    setSelectedDelivery(delivery);
-    setShowAcceptModal(true);
-  };
+  // const handleAcceptDelivery = (delivery) => {
+  //   setSelectedDelivery(delivery);
+  //   setShowAcceptModal(true);
+  // };
 
   const handleConfirmAccept = async () => {
     if (!selectedDelivery) return;
@@ -798,24 +784,24 @@ const DeliveryDashboard = () => {
     }
   ];
 
-  const customStyles = {
-    headCells: {
-      style: {
-        padding: '12px 15px',
-        backgroundColor: '#f8f9fa',
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        fontSize: '0.75rem',
-        letterSpacing: '0.5px'
-      },
-    },
-    cells: {
-      style: {
-        padding: '15px',
-        verticalAlign: 'middle'
-      },
-    },
-  };
+  // const customStyles = {
+  //   headCells: {
+  //     style: {
+  //       padding: '12px 15px',
+  //       backgroundColor: '#f8f9fa',
+  //       fontWeight: 600,
+  //       textTransform: 'uppercase',
+  //       fontSize: '0.75rem',
+  //       letterSpacing: '0.5px'
+  //     },
+  //   },
+  //   cells: {
+  //     style: {
+  //       padding: '15px',
+  //       verticalAlign: 'middle'
+  //     },
+  //   },
+  // };
 
   if (loading && deliveries.length === 0) {
     return (

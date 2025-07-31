@@ -151,9 +151,7 @@ const NavigationBar = () => {
       ) {
         setShowNotifications(false);
       }
-      if (chatbotRef.current && !chatbotRef.current.contains(event.target)) {
-        setShowChatbot(false);
-      }
+
     };
 
     document.addEventListener("mousedown", handleClickOutside);

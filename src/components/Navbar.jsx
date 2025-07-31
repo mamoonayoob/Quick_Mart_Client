@@ -10,7 +10,6 @@ import {
   BsClipboardCheck,
   BsBell,
   BsBellFill,
-  BsChatDots,
   BsEnvelope,
 } from "react-icons/bs";
 import {
@@ -22,7 +21,6 @@ import {
   Badge,
   Spinner,
   Image,
-  Button,
 } from "react-bootstrap";
 import { useCart } from "../context/CartContext";
 import { useSelector, useDispatch } from "react-redux";
@@ -94,100 +92,14 @@ const chatBotStyles = {
   },
 };
 
-// ChatBot component
-const ChatBot = ({ onClose }) => {
-  const [messages, setMessages] = useState([
-    {
-      role: "bot",
-      text: "👋 Hi! I'm your support assistant. How can I help you today?",
-    },
-  ]);
-  const [loading, setLoading] = useState(false);
-  const [input, setInput] = useState("");
-  const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-
-    const newMessages = [...messages, { role: "user", text: input }];
-    setMessages(newMessages);
-    setInput("");
-
-    try {
-      setLoading(true);
-      const res = await axios.post(
-        "https://nextgenretail.site/quickmart/api/chat",
-        {
-          message: input,
-        }
-      );
-
-      setMessages([...newMessages, { role: "bot", text: res.data.reply }]);
-    } catch (err) {
-      setMessages([
-        ...newMessages,
-        { role: "bot", text: "⚠️ Sorry, I couldn't process your request." },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div style={chatBotStyles.chatBox}>
-      <div style={chatBotStyles.header}>
-        <h5 className="m-0">QuickMart Support</h5>
-        {onClose && (
-          <button style={chatBotStyles.closeButton} onClick={onClose}>
-            ×
-          </button>
-        )}
-      </div>
-      <div style={chatBotStyles.messages}>
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            style={{
-              ...chatBotStyles.message,
-              alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
-              backgroundColor: msg.role === "user" ? "#d1e7dd" : "#f8f9fa",
-            }}
-          >
-            {msg.text}
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-      <div style={chatBotStyles.inputArea}>
-        <input
-          style={chatBotStyles.input}
-          placeholder="Ask me anything..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-        />
-        <button style={chatBotStyles.button} onClick={sendMessage}>
-          {loading ? <Spinner animation="border" size="sm" /> : "Send"}
-        </button>
-      </div>
-    </div>
-  );
-};
 
 const NavigationBar = () => {
   const { cartCount, loading: cartLoading } = useCart();
   const { unreadCount, fetchNotifications } = useMessages();
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showChatbot, setShowChatbot] = useState(false);
+
   const notificationRef = useRef(null);
   const chatbotRef = useRef(null);
   const navigate = useNavigate();
@@ -211,9 +123,7 @@ const NavigationBar = () => {
       ) {
         setShowNotifications(false);
       }
-      if (chatbotRef.current && !chatbotRef.current.contains(event.target)) {
-        setShowChatbot(false);
-      }
+
     };
 
     document.addEventListener("mousedown", handleClickOutside);

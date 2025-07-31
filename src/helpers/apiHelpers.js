@@ -464,7 +464,7 @@ export const getPaymentMethods = async () => {
 export const getChatbotResponse = async (userMessage) => {
   try {
     const response = await apiPost("chat", { message: userMessage }); // endpoint: /api/chat
-    return response.response || "Sorry, I didn't get that.";
+    return response.reply || "Sorry, I didn't get that.";
   } catch (error) {
     console.error("Chatbot API error:", error.message);
     return "Server error while getting chatbot response.";

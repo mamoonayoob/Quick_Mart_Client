@@ -1,3 +1,4 @@
+/* eslint-disable import/no-anonymous-default-export */
 /**
  * Socket.IO Service for real-time messaging
  * This service handles Socket.IO connections and message handling

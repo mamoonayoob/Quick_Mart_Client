@@ -1,22 +1,24 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { 
-  Row, 
-  Col, 
-  Button, 
-  Spinner, 
-  Container, 
-  Form, 
-  InputGroup, 
-  Toast, 
+import {
+  Row,
+  Col,
+  Button,
+  Spinner,
+  Container,
+  Form,
+  Toast,
   Dropdown,
-  Badge,
-  Card
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { BsSearch, BsFilter, BsGrid3X3, BsListUl, BsSliders } from "react-icons/bs";
-import img from "../../assets/image.png"; // Use dynamic image later
-import { getAllProducts, addToCart, getWishlist, addToWishlist, removeFromWishlist } from "../../helpers/apiHelpers";
+import { BsSearch, BsFilter, BsGrid3X3, BsListUl } from "react-icons/bs";
+import {
+  getAllProducts,
+  addToCart,
+  getWishlist,
+  addToWishlist,
+  removeFromWishlist,
+} from "../../helpers/apiHelpers";
 import ProductCard from "./ProductCard";
 import "./Product.css";
 
@@ -36,7 +38,7 @@ function Product() {
   const [toastMessage, setToastMessage] = useState("");
   const [viewMode, setViewMode] = useState("grid"); // grid or list view
   const [sortBy, setSortBy] = useState("featured"); // sorting option
-  
+
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.auth);
 
@@ -46,20 +48,24 @@ function Product() {
       // Request a larger number of products (up to 100) to show all products
       const response = await getAllProducts({
         limit: 100, // Get up to 100 products instead of default 10
-        page: 1
+        page: 1,
       });
-      
+
       console.log("Products fetched:", response);
       const productData = response.data || [];
       console.log("Total products found:", productData.length);
-      
+
       setProducts(productData);
-      
+
       // Extract unique categories from products
-      const uniqueCategories = [...new Set(productData
-        .map(product => product.category || product.description)
-        .filter(category => category))];
-      
+      const uniqueCategories = [
+        ...new Set(
+          productData
+            .map((product) => product.category || product.description)
+            .filter((category) => category)
+        ),
+      ];
+
       setCategories(uniqueCategories);
       setError(null);
     } catch (error) {
@@ -76,23 +82,23 @@ function Product() {
       navigate("/login", { state: { from: "/product" } });
       return;
     }
-    
+
     // Check if product is in stock
     if (!product.stock || product.stock <= 0) {
       setToastMessage("Sorry, this product is out of stock");
       setShowToast(true);
       return;
     }
-    
+
     setCartLoading(true);
     setActionProductId(product._id);
     try {
       // Using our apiHelpers with the token already in interceptors
       await addToCart({
         productId: product._id,
-        quantity: 1
+        quantity: 1,
       });
-      
+
       setToastMessage("Added to cart successfully!");
       setShowToast(true);
     } catch (err) {
@@ -110,14 +116,14 @@ function Product() {
       setActionProductId(null);
     }
   };
-  
+
   const handleBuyNow = (product) => {
     // Check if user is authenticated before proceeding to buy
     if (!isAuthenticated) {
       navigate("/login", { state: { from: `/singleProduct/${product._id}` } });
       return;
     }
-    
+
     // Navigate to single product page
     navigate(`/singleProduct/${product._id}`);
   };
@@ -131,20 +137,23 @@ function Product() {
     // Category filter
     const matchCategory =
       categoryFilter === "" ||
-      (product?.category?.toLowerCase().includes(categoryFilter.toLowerCase())) ||
-      (product?.description?.toLowerCase().includes(categoryFilter.toLowerCase()));
-    
+      product?.category?.toLowerCase().includes(categoryFilter.toLowerCase()) ||
+      product?.description
+        ?.toLowerCase()
+        .includes(categoryFilter.toLowerCase());
+
     // Search query filter
     const query = searchQuery.toLowerCase().trim();
-    const matchSearch = query === "" || 
-      (product?.name?.toLowerCase().includes(query)) ||
-      (product?.Tittle?.toLowerCase().includes(query)) ||
-      (product?.description?.toLowerCase().includes(query)) ||
-      (product?.product_desc?.toLowerCase().includes(query));
+    const matchSearch =
+      query === "" ||
+      product?.name?.toLowerCase().includes(query) ||
+      product?.Tittle?.toLowerCase().includes(query) ||
+      product?.description?.toLowerCase().includes(query) ||
+      product?.product_desc?.toLowerCase().includes(query);
 
     return matchPrice && matchCategory && matchSearch;
   });
-  
+
   // Sort products based on selected sort option
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "price-low") {
@@ -152,7 +161,10 @@ function Product() {
     } else if (sortBy === "price-high") {
       return b.price - a.price;
     } else if (sortBy === "newest") {
-      return new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now());
+      return (
+        new Date(b.createdAt || Date.now()) -
+        new Date(a.createdAt || Date.now())
+      );
     } else {
       // Default: featured or any other option
       return 0; // Keep original order
@@ -162,12 +174,14 @@ function Product() {
   // Fetch wishlist items
   const fetchWishlist = useCallback(async () => {
     if (!isAuthenticated) return;
-    
+
     try {
       const response = await getWishlist();
       if (response && response.success && response.data) {
         // Extract product IDs from wishlist items
-        const wishlistProductIds = response.data.map(item => item.product._id);
+        const wishlistProductIds = response.data.map(
+          (item) => item.product._id
+        );
         setWishlistItems(wishlistProductIds);
       }
     } catch (error) {
@@ -181,20 +195,20 @@ function Product() {
       navigate("/login", { state: { from: "/product" } });
       return;
     }
-    
+
     setWishlistLoading(true);
     setActionProductId(productId);
-    
+
     try {
       if (wishlistItems.includes(productId)) {
         // Remove from wishlist
         await removeFromWishlist(productId);
-        setWishlistItems(prev => prev.filter(id => id !== productId));
+        setWishlistItems((prev) => prev.filter((id) => id !== productId));
         setToastMessage("Removed from wishlist!");
       } else {
         // Add to wishlist
         await addToWishlist({ productId });
-        setWishlistItems(prev => [...prev, productId]);
+        setWishlistItems((prev) => [...prev, productId]);
         setToastMessage("Added to wishlist!");
       }
       setShowToast(true);
@@ -211,7 +225,7 @@ function Product() {
   useEffect(() => {
     getProducts();
   }, []);
-  
+
   useEffect(() => {
     fetchWishlist();
   }, [fetchWishlist]);
@@ -219,10 +233,10 @@ function Product() {
   return (
     <div className="product-page">
       {/* Toast notification */}
-      <Toast 
-        show={showToast} 
-        onClose={() => setShowToast(false)} 
-        delay={30000} 
+      <Toast
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        delay={30000}
         autohide
         className="notification-toast"
       >
@@ -239,15 +253,15 @@ function Product() {
           <Row>
             <Col md={8}>
               <div className="input-group mb-3">
-                <Form.Control 
-                  type="text" 
-                  placeholder="Search for products..." 
+                <Form.Control
+                  type="text"
+                  placeholder="Search for products..."
                   className="search-input py-2"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   className="search-button"
                   onClick={() => getProducts()}
                 >
@@ -258,7 +272,7 @@ function Product() {
           </Row>
         </Container>
       </div>
-      
+
       <Container>
         <Row>
           {/* Sidebar Filters */}
@@ -267,13 +281,13 @@ function Product() {
               <div className="filter-heading">
                 <BsFilter className="me-2" /> Filters
               </div>
-              
+
               {/* Price Range Filter */}
               <div className="filter-group">
                 <div className="filter-label">Price Range</div>
                 <div className="price-range-slider">
                   <Form.Label>Max Price: Rs. {priceFilter}</Form.Label>
-                  <Form.Range 
+                  <Form.Range
                     min="100"
                     max="10000"
                     step="100"
@@ -286,7 +300,7 @@ function Product() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Category Filter */}
               <div className="filter-group">
                 <div className="filter-label">Categories</div>
@@ -307,11 +321,15 @@ function Product() {
                       id={`category-${index}`}
                       label={
                         <div className="d-flex w-100 justify-content-between gap-2">
-                          {category.toUpperCase()} 
+                          {category.toUpperCase()}
                           <span className="count">
-                            {filteredProducts.filter(p => 
-                              p.category === category || p.description === category
-                            ).length}
+                            {
+                              filteredProducts.filter(
+                                (p) =>
+                                  p.category === category ||
+                                  p.description === category
+                              ).length
+                            }
                           </span>
                         </div>
                       }
@@ -323,12 +341,12 @@ function Product() {
                   ))}
                 </Form>
               </div>
-              
+
               {/* Sort Options */}
               <div className="filter-group">
                 <div className="filter-label">Sort By</div>
-                <Form.Select 
-                  value={sortBy} 
+                <Form.Select
+                  value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="form-select-sm"
                 >
@@ -338,7 +356,7 @@ function Product() {
                   <option value="newest">Newest First</option>
                 </Form.Select>
               </div>
-              
+
               {/* Action Banner */}
               <div className="action-banner mt-4">
                 <h3>New Arrivals!</h3>
@@ -352,7 +370,11 @@ function Product() {
           <Col lg={9}>
             {loading ? (
               <div className="loading-container">
-                <Spinner animation="border" variant="primary" className="loading-spinner" />
+                <Spinner
+                  animation="border"
+                  variant="primary"
+                  className="loading-spinner"
+                />
                 <p>Loading products...</p>
               </div>
             ) : error ? (
@@ -364,33 +386,50 @@ function Product() {
                   <div className="products-count">
                     Showing {sortedProducts.length} products
                   </div>
-                  
+
                   <div className="d-flex align-items-center">
                     <div className="sort-dropdown me-3">
                       <Dropdown>
                         <Dropdown.Toggle variant="light" id="dropdown-sort">
-                          Sort: {sortBy.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
+                          Sort:{" "}
+                          {sortBy
+                            .split("-")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1)
+                            )
+                            .join(" ")}
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                          <Dropdown.Item onClick={() => setSortBy("featured")}>Featured</Dropdown.Item>
-                          <Dropdown.Item onClick={() => setSortBy("price-low")}>Price: Low to High</Dropdown.Item>
-                          <Dropdown.Item onClick={() => setSortBy("price-high")}>Price: High to Low</Dropdown.Item>
-                          <Dropdown.Item onClick={() => setSortBy("newest")}>Newest First</Dropdown.Item>
+                          <Dropdown.Item onClick={() => setSortBy("featured")}>
+                            Featured
+                          </Dropdown.Item>
+                          <Dropdown.Item onClick={() => setSortBy("price-low")}>
+                            Price: Low to High
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => setSortBy("price-high")}
+                          >
+                            Price: High to Low
+                          </Dropdown.Item>
+                          <Dropdown.Item onClick={() => setSortBy("newest")}>
+                            Newest First
+                          </Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
                     </div>
-                    
+
                     <div className="view-options">
-                      <Button 
-                        variant={viewMode === "grid" ? "primary" : "light"} 
+                      <Button
+                        variant={viewMode === "grid" ? "primary" : "light"}
                         size="sm"
                         onClick={() => setViewMode("grid")}
                         title="Grid View"
                       >
                         <BsGrid3X3 />
                       </Button>
-                      <Button 
-                        variant={viewMode === "list" ? "primary" : "light"} 
+                      <Button
+                        variant={viewMode === "list" ? "primary" : "light"}
                         size="sm"
                         onClick={() => setViewMode("list")}
                         title="List View"
@@ -400,16 +439,16 @@ function Product() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Products List */}
                 <Row className="products-grid">
                   {sortedProducts.length > 0 ? (
                     sortedProducts.map((product) => (
-                      <Col 
-                        key={product._id} 
-                        xs={12} 
-                        md={viewMode === "list" ? 12 : 6} 
-                        lg={viewMode === "list" ? 12 : 4} 
+                      <Col
+                        key={product._id}
+                        xs={12}
+                        md={viewMode === "list" ? 12 : 6}
+                        lg={viewMode === "list" ? 12 : 4}
                         className="mb-4"
                       >
                         <ProductCard
@@ -429,8 +468,8 @@ function Product() {
                       <div className="no-products">
                         <h3>No products found</h3>
                         <p>Try adjusting your filters or search criteria</p>
-                        <Button 
-                          variant="primary" 
+                        <Button
+                          variant="primary"
                           onClick={() => {
                             setSearchQuery("");
                             setPriceFilter("50000");

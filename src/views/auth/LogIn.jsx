@@ -3,22 +3,28 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser, clearError, fetchUserProfile } from "../../redux/slices/authSlice";
+import {
+  loginUser,
+  clearError,
+  fetchUserProfile,
+} from "../../redux/slices/authSlice";
 import logo from "../../assets/logoIcon.png";
 const LogIn = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
-  
+  const { loading, error, isAuthenticated } = useSelector(
+    (state) => state.auth
+  );
+
   // Get the redirect path from location state or use role-based default
   const from = location.state?.from?.pathname || "/";
-  
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -27,87 +33,92 @@ const LogIn = () => {
         .unwrap()
         .then((userData) => {
           // Redirect based on user role
-          const userRole = userData?.role || JSON.parse(localStorage.getItem('user'))?.role;
+          const userRole =
+            userData?.role || JSON.parse(localStorage.getItem("user"))?.role;
           console.log("User role for redirect:", userRole);
-          
+
           let redirectPath;
           // If coming from a specific page, honor that, otherwise redirect based on role
           if (location.state?.from?.pathname) {
             redirectPath = from;
           } else {
             // Role-based redirect
-            switch(userRole) {
-              case 'admin':
-                redirectPath = '/admin/dashboard';
+            switch (userRole) {
+              case "admin":
+                redirectPath = "/admin/dashboard";
                 break;
-              case 'vendor':
-                redirectPath = '/vendor/dashboard';
+              case "vendor":
+                redirectPath = "/vendor/dashboard";
                 break;
-              case 'deliveryman':
-              case 'delivery':
-                redirectPath = '/delivery/dashboard';
+              case "deliveryman":
+              case "delivery":
+                redirectPath = "/delivery/dashboard";
                 break;
               default: // customer or any other role
-                redirectPath = '/';
+                redirectPath = "/";
                 break;
             }
           }
-          
+
           console.log("Redirecting to:", redirectPath);
           navigate(redirectPath, { replace: true });
         })
         .catch((err) => {
           console.error("Failed to fetch profile:", err);
           // Get user from localStorage as fallback
-          const userFromStorage = JSON.parse(localStorage.getItem('user'));
-          let fallbackPath = '/';
-          
-          if (userFromStorage?.role === 'admin') {
-            fallbackPath = '/admin/dashboard';
-          } else if (userFromStorage?.role === 'vendor') {
-            fallbackPath = '/vendor/dashboard';
-          } else if (userFromStorage?.role === 'deliveryman' || userFromStorage?.role === 'delivery') {
-            fallbackPath = '/delivery/dashboard';
+          const userFromStorage = JSON.parse(localStorage.getItem("user"));
+          let fallbackPath = "/";
+
+          if (userFromStorage?.role === "admin") {
+            fallbackPath = "/admin/dashboard";
+          } else if (userFromStorage?.role === "vendor") {
+            fallbackPath = "/vendor/dashboard";
+          } else if (
+            userFromStorage?.role === "deliveryman" ||
+            userFromStorage?.role === "delivery"
+          ) {
+            fallbackPath = "/delivery/dashboard";
           }
-          
+
           navigate(fallbackPath, { replace: true });
         });
     }
-    
+
     // Clear any previous errors when component mounts
     return () => {
       dispatch(clearError());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, navigate, dispatch, from]);
-  
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(loginUser(formData))
       .unwrap()
       .then((response) => {
         console.log("Login successful", response);
-        
+
         // Direct navigation based on user role
         const userRole = response?.user?.role;
         console.log("User role from login response:", userRole);
-        
+
         // Redirect based on role
-        if (userRole === 'admin') {
-          navigate('/admin/dashboard', { replace: true });
-        } else if (userRole === 'vendor') {
-          navigate('/vendor/dashboard', { replace: true });
-        } else if (userRole === 'delivery' || userRole === 'deliveryman') {
-          navigate('/delivery/dashboard', { replace: true });
+        if (userRole === "admin") {
+          navigate("/admin/dashboard", { replace: true });
+        } else if (userRole === "vendor") {
+          navigate("/vendor/dashboard", { replace: true });
+        } else if (userRole === "delivery" || userRole === "deliveryman") {
+          navigate("/delivery/dashboard", { replace: true });
         } else {
           // Default to home for customers or unknown roles
-          navigate('/', { replace: true });
+          navigate("/", { replace: true });
         }
       })
       .catch((err) => {
@@ -125,7 +136,13 @@ const LogIn = () => {
             className="left-side text-center d-flex flex-row justify-content-center align-i"
           >
             <div className="d-flex flex-row align-items-center justify-content-center">
-              <img src={logo} alt="Quick Mart Logo" width={200} height={200} className="img-fluid" />
+              <img
+                src={logo}
+                alt="Quick Mart Logo"
+                width={200}
+                height={200}
+                className="img-fluid"
+              />
               <h2>Quick Mart</h2>
             </div>
           </Col>
@@ -134,9 +151,9 @@ const LogIn = () => {
           <Col md={6} className="right-side">
             <div className="login-box">
               <h3 className="text-center mb-5 fs-2 fw-bold">Log In</h3>
-              
+
               {error && <Alert variant="danger">{error}</Alert>}
-              
+
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
                   <Form.Control

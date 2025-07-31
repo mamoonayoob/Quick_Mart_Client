@@ -210,23 +210,6 @@ const WhatsAppVendorMessages = () => {
       let endpoint = "";
       let requestBody = {};
 
-      // Get the most recent order ID from local storage or use a default
-      const getRecentOrderId = () => {
-        try {
-          // Try to get from localStorage
-          const recentOrderId = localStorage.getItem("recentOrderId");
-          if (recentOrderId) return recentOrderId;
-
-          // Fallback to a default order ID (this should be replaced with actual order fetching)
-          return "64c9dfcf8b8c0e1a3c8c2e5a"; // Replace with a valid order ID from your database
-        } catch (error) {
-          console.error("Error getting recent order ID:", error);
-          return "64c9dfcf8b8c0e1a3c8c2e5a"; // Fallback order ID
-        }
-      };
-
-      const orderId = getRecentOrderId();
-
       if (selectedUser.role === "customer") {
         // Use the general vendor-to-customer endpoint
         endpoint =
@@ -359,6 +342,7 @@ const WhatsAppVendorMessages = () => {
 
       return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUser]);
 
   // Helper function to get user type color
@@ -377,20 +361,6 @@ const WhatsAppVendorMessages = () => {
     }
   };
 
-  // Helper function to get user type icon
-  const getUserIcon = (role) => {
-    switch (role) {
-      case "customer":
-        return <BsPerson size={20} />;
-      case "delivery":
-        return <BsTruck size={20} />;
-      case "vendor":
-        return <BsShop size={20} />;
-      default:
-        return <BsPerson size={20} />;
-    }
-  };
-
   useEffect(() => {
     // Fetch appropriate users based on active tab
     if (activeTab === "customers") {
@@ -398,12 +368,14 @@ const WhatsAppVendorMessages = () => {
     } else if (activeTab === "delivery") {
       fetchDeliveryUsers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   useEffect(() => {
     // Initial fetch of both user types
     fetchCustomers();
     fetchDeliveryUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

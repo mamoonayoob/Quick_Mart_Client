@@ -449,6 +449,7 @@ export const MessageProvider = ({ children }) => {
       disconnectSocket();
       unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Fetch notifications on initial load

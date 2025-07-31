@@ -1,39 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Row, 
-  Col, 
-  Card, 
-  Button, 
-  Form, 
-  InputGroup, 
-  Badge,
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Form,
+  InputGroup,
   Modal,
   Alert,
-  Spinner
-} from 'react-bootstrap';
-import { 
-  BsSearch, 
-  BsChat, 
-  BsShop, 
-  BsStar, 
+  Spinner,
+} from "react-bootstrap";
+import {
+  BsSearch,
+  BsChat,
+  BsShop,
+  BsStar,
   BsGeoAlt,
   BsPhone,
-  BsEnvelope
-} from 'react-icons/bs';
-import { useNavigate } from 'react-router-dom';
-import { vendorApi } from '../../services/api';
-import { sendGeneralMessageToVendor } from '../../services/messageService';
-import { toast } from 'react-toastify';
+  BsEnvelope,
+} from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
+import { vendorApi } from "../../services/api";
+import { sendGeneralMessageToVendor } from "../../services/messageService";
+import { toast } from "react-toastify";
 
 const VendorDirectory = () => {
   const [vendors, setVendors] = useState([]);
   const [filteredVendors, setFilteredVendors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
-  const [messageContent, setMessageContent] = useState('');
+  const [messageContent, setMessageContent] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const navigate = useNavigate();
 
@@ -54,8 +54,8 @@ const VendorDirectory = () => {
         setVendors(response.data.data || []);
       }
     } catch (error) {
-      console.error('Error fetching vendors:', error);
-      toast.error('Failed to load vendors');
+      console.error("Error fetching vendors:", error);
+      toast.error("Failed to load vendors");
     } finally {
       setLoading(false);
     }
@@ -65,10 +65,13 @@ const VendorDirectory = () => {
     if (!searchTerm.trim()) {
       setFilteredVendors(vendors);
     } else {
-      const filtered = vendors.filter(vendor =>
-        vendor.businessName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vendor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vendor.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = vendors.filter(
+        (vendor) =>
+          vendor.businessName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          vendor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          vendor.email?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredVendors(filtered);
     }
@@ -77,27 +80,30 @@ const VendorDirectory = () => {
   const handleMessageVendor = (vendor) => {
     setSelectedVendor(vendor);
     setShowMessageModal(true);
-    setMessageContent('');
+    setMessageContent("");
   };
 
   const handleSendMessage = async () => {
     if (!messageContent.trim()) {
-      toast.error('Please enter a message');
+      toast.error("Please enter a message");
       return;
     }
 
     try {
       setSendingMessage(true);
-      await sendGeneralMessageToVendor(selectedVendor._id, messageContent.trim());
-      toast.success('Message sent successfully!');
+      await sendGeneralMessageToVendor(
+        selectedVendor._id,
+        messageContent.trim()
+      );
+      toast.success("Message sent successfully!");
       setShowMessageModal(false);
-      setMessageContent('');
-      
+      setMessageContent("");
+
       // Navigate to messages page to continue conversation
-      navigate('/messages');
+      navigate("/messages");
     } catch (error) {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message. Please try again.');
+      console.error("Error sending message:", error);
+      toast.error("Failed to send message. Please try again.");
     } finally {
       setSendingMessage(false);
     }
@@ -125,10 +131,7 @@ const VendorDirectory = () => {
           <BsShop className="me-2" />
           Vendor Directory
         </h2>
-        <Button 
-          variant="outline-primary" 
-          onClick={() => navigate('/messages')}
-        >
+        <Button variant="outline-primary" onClick={() => navigate("/messages")}>
           <BsChat className="me-2" />
           My Messages
         </Button>
@@ -156,7 +159,9 @@ const VendorDirectory = () => {
         {filteredVendors.length === 0 ? (
           <Col xs={12}>
             <Alert variant="info" className="text-center">
-              {searchTerm ? 'No vendors found matching your search.' : 'No vendors available.'}
+              {searchTerm
+                ? "No vendors found matching your search."
+                : "No vendors available."}
             </Alert>
           </Col>
         ) : (
@@ -166,8 +171,10 @@ const VendorDirectory = () => {
                 <Card.Body>
                   <div className="d-flex align-items-center mb-3">
                     <div className="avatar-circle me-3">
-                      <img 
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(vendor.businessName || vendor.name)}&background=4361ee&color=fff&size=60`}
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          vendor.businessName || vendor.name
+                        )}&background=4361ee&color=fff&size=60`}
                         alt={vendor.businessName || vendor.name}
                         className="rounded-circle"
                         width="60"
@@ -175,7 +182,9 @@ const VendorDirectory = () => {
                       />
                     </div>
                     <div className="flex-grow-1">
-                      <h5 className="mb-1">{vendor.businessName || vendor.name}</h5>
+                      <h5 className="mb-1">
+                        {vendor.businessName || vendor.name}
+                      </h5>
                       <small className="text-muted">{vendor.name}</small>
                     </div>
                   </div>
@@ -204,17 +213,21 @@ const VendorDirectory = () => {
                   {/* Vendor Stats */}
                   <div className="d-flex justify-content-between mb-3">
                     <div className="text-center">
-                      <div className="fw-bold text-primary">{vendor.productCount || 0}</div>
+                      <div className="fw-bold text-primary">
+                        {vendor.productCount || 0}
+                      </div>
                       <small className="text-muted">Products</small>
                     </div>
                     <div className="text-center">
-                      <div className="fw-bold text-success">{vendor.orderCount || 0}</div>
+                      <div className="fw-bold text-success">
+                        {vendor.orderCount || 0}
+                      </div>
                       <small className="text-muted">Orders</small>
                     </div>
                     <div className="text-center">
                       <div className="fw-bold text-warning d-flex align-items-center">
                         <BsStar className="me-1" size={14} />
-                        {vendor.rating || '4.5'}
+                        {vendor.rating || "4.5"}
                       </div>
                       <small className="text-muted">Rating</small>
                     </div>
@@ -247,7 +260,11 @@ const VendorDirectory = () => {
       </Row>
 
       {/* Message Modal */}
-      <Modal show={showMessageModal} onHide={() => setShowMessageModal(false)} size="lg">
+      <Modal
+        show={showMessageModal}
+        onHide={() => setShowMessageModal(false)}
+        size="lg"
+      >
         <Modal.Header closeButton>
           <Modal.Title>
             <BsChat className="me-2" />
@@ -258,15 +275,19 @@ const VendorDirectory = () => {
           {selectedVendor && (
             <div className="mb-3">
               <div className="d-flex align-items-center">
-                <img 
-                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selectedVendor.businessName || selectedVendor.name)}&background=4361ee&color=fff&size=50`}
+                <img
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    selectedVendor.businessName || selectedVendor.name
+                  )}&background=4361ee&color=fff&size=50`}
                   alt={selectedVendor.businessName || selectedVendor.name}
                   className="rounded-circle me-3"
                   width="50"
                   height="50"
                 />
                 <div>
-                  <h6 className="mb-0">{selectedVendor.businessName || selectedVendor.name}</h6>
+                  <h6 className="mb-0">
+                    {selectedVendor.businessName || selectedVendor.name}
+                  </h6>
                   <small className="text-muted">{selectedVendor.email}</small>
                 </div>
               </div>
@@ -284,26 +305,33 @@ const VendorDirectory = () => {
               disabled={sendingMessage}
             />
             <Form.Text className="text-muted">
-              You can ask about products, pricing, custom orders, or any general inquiries.
+              You can ask about products, pricing, custom orders, or any general
+              inquiries.
             </Form.Text>
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={() => setShowMessageModal(false)}
             disabled={sendingMessage}
           >
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleSendMessage}
             disabled={sendingMessage || !messageContent.trim()}
           >
             {sendingMessage ? (
               <>
-                <Spinner as="span" animation="border" size="sm" role="status" className="me-2" />
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  className="me-2"
+                />
                 Sending...
               </>
             ) : (

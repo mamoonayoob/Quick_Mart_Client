@@ -1,8 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Container, Row, Col, Form, Button, Card, Alert, Spinner, Modal } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  Card,
+  Alert,
+  Spinner,
+  Modal,
+} from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getCart, createOrder, getUserProfile, updateOrderPayment } from "../../helpers/apiHelpers";
+import {
+  getCart,
+  createOrder,
+  getUserProfile,
+  updateOrderPayment,
+} from "../../helpers/apiHelpers";
 import { useToast } from "../../components/ToastNotification";
 import { useCart } from "../../context/CartContext";
 import DeliveryLocationMap from "./DeliveryLocationMap";
@@ -13,31 +28,31 @@ function CheckOut() {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const toast = useToast();
   const { fetchCart } = useCart();
-  
+
   // State for cart and order
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  
+
   // Refs to prevent duplicate API calls
   const cartFetchedRef = useRef(false);
   const profileFetchedRef = useRef(false);
-  const [ setWalletBalance] = useState(0);
+  const [setWalletBalance] = useState(0);
   const [shippingAddress, setShippingAddress] = useState({
     street: "",
     city: "",
     state: "",
     zipCode: "",
-    country: ""
+    country: "",
   });
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [deliveryType, setDeliveryType] = useState("standard");
   const [notes, setNotes] = useState("");
   const [deliveryLocation, setDeliveryLocation] = useState({
     latitude: 40.7128,
-    longitude: -74.0060
+    longitude: -74.006,
   });
   const [locationSelected, setLocationSelected] = useState(false);
   const [locationError, setLocationError] = useState(false);
@@ -47,17 +62,17 @@ function CheckOut() {
   const [pendingOrderId, setPendingOrderId] = useState(null);
   const [clientSecret, setClientSecret] = useState(null);
   const [paymentIntentId, setPaymentIntentId] = useState(null);
-  
+
   // Fetch cart items and user profile when component mounts
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
     }
-    
+
     const fetchCartItems = async () => {
       if (cartFetchedRef.current) return;
-      
+
       try {
         setLoading(true);
         const response = await getCart();
@@ -75,10 +90,10 @@ function CheckOut() {
         cartFetchedRef.current = true;
       }
     };
-    
+
     const fetchUserProfile = async () => {
       if (profileFetchedRef.current) return;
-      
+
       try {
         const response = await getUserProfile();
         if (response.success) {
@@ -96,36 +111,40 @@ function CheckOut() {
         profileFetchedRef.current = true;
       }
     };
-    
+
     fetchCartItems();
     fetchUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, navigate]);
-  
+
   // Calculate subtotal
   const calculateSubtotal = (items) => {
-    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
     setSubtotal(total);
     return total;
   };
-  
+
   // Calculate shipping cost
   const calculateShipping = (type) => {
     const cost = type === "express" ? 10 : 5;
     setShippingCost(cost);
     return cost;
   };
-  
+
   // Calculate total
   const calculateTotal = () => {
     return subtotal + shippingCost;
   };
-  
+
   // Handle delivery type change
   const handleDeliveryTypeChange = (type) => {
     setDeliveryType(type);
     calculateShipping(type);
   };
-  
+
   // Handle payment method change
   const handlePaymentMethodChange = (method) => {
     setPaymentMethod(method);
@@ -136,53 +155,69 @@ function CheckOut() {
       setStripePaymentMethod(null);
     }
   };
-  
+
   // Handle map click to set delivery location
   const handleMapClick = (location) => {
     setDeliveryLocation(location);
     setLocationSelected(true);
     setLocationError(false);
   };
-  
+
   // Validate order fields
   const validateOrderFields = () => {
     let isValid = true;
-    
+
     // Check if cart is empty
     if (cartItems.length === 0) {
       toast.error("Your cart is empty");
       return false;
     }
-    
+
     // Check shipping address
-    if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zipCode || !shippingAddress.country) {
+    if (
+      !shippingAddress.street ||
+      !shippingAddress.city ||
+      !shippingAddress.state ||
+      !shippingAddress.zipCode ||
+      !shippingAddress.country
+    ) {
       toast.error("Please fill in all shipping address fields");
       isValid = false;
     }
-    
+
     // Check delivery location
-    if (!locationSelected || !deliveryLocation || !deliveryLocation.latitude || !deliveryLocation.longitude) {
+    if (
+      !locationSelected ||
+      !deliveryLocation ||
+      !deliveryLocation.latitude ||
+      !deliveryLocation.longitude
+    ) {
       toast.error("Please select a delivery location on the map");
       setLocationError(true);
       isValid = false;
     }
-    
+
     return isValid;
   };
-  
+
   // Create a pending order for card payment
   const createPendingOrder = async () => {
     try {
       setProcessing(true);
-      
+
       // For card payment initialization, we only need minimal validation
-      if (!locationSelected || !deliveryLocation || !deliveryLocation.latitude || !deliveryLocation.longitude) {
+      if (
+        !locationSelected ||
+        !deliveryLocation ||
+        !deliveryLocation.latitude ||
+        !deliveryLocation.longitude
+      ) {
         toast.error("Please select a delivery location on the map");
         setLocationError(true);
         setProcessing(false);
         return null;
       }
-      
+
       const orderData = {
         orderItems: cartItems,
         shippingAddress,
@@ -190,25 +225,27 @@ function CheckOut() {
         paymentMethod: "card",
         deliveryType,
         notes,
-        status: "pending"
+        status: "pending",
       };
-      
+
       const response = await createOrder(orderData);
-      
+
       if (response.success) {
         setPendingOrderId(response.data.order._id);
         setClientSecret(response.data.clientSecret);
         setPaymentIntentId(response.data.paymentIntentId);
-        
+
         // Check if payment was already processed
         if (response.data.alreadyPaid) {
           toast.success("Payment was already processed successfully!");
           await fetchCart();
-          navigate('/orders');
+          navigate("/orders");
           return response.data;
         }
-        
-        toast.success(response.message || "Order created. Please complete payment.");
+
+        toast.success(
+          response.message || "Order created. Please complete payment."
+        );
         return response.data;
       } else {
         toast.error(response.message || "Failed to create order");
@@ -221,26 +258,26 @@ function CheckOut() {
       setProcessing(false);
     }
   };
-  
+
   // Handle Stripe payment method
   const handleStripePaymentMethod = async (paymentMethod) => {
     try {
       setStripePaymentMethod(paymentMethod);
-      
+
       if (pendingOrderId && paymentIntentId) {
         setProcessing(true);
-        
+
         // Update payment status via API before redirecting
         const response = await updateOrderPayment(pendingOrderId, {
           paymentId: paymentMethod.id,
           paymentIntentId: paymentIntentId,
-          status: "completed"
+          status: "completed",
         });
-        
+
         if (response.success) {
           toast.success("Payment successful! Order is being processed.");
           await fetchCart();
-          navigate('/orders');
+          navigate("/orders");
         } else {
           toast.error(response.message || "Payment update failed");
         }
@@ -248,23 +285,25 @@ function CheckOut() {
         toast.error("No pending order or payment intent found");
       }
     } catch (err) {
-      toast.error("Payment processing error: " + (err.message || "Unknown error"));
+      toast.error(
+        "Payment processing error: " + (err.message || "Unknown error")
+      );
     } finally {
       setProcessing(false);
     }
   };
-  
+
   // Handle place order
   const handlePlaceOrder = async (existingOrderId = null) => {
     try {
       setProcessing(true);
-      
+
       // Validate all required fields
       if (!validateOrderFields()) {
         setProcessing(false);
         return;
       }
-      
+
       // If payment method is card and we don't have a Stripe payment method yet
       if (paymentMethod === "card" && !stripePaymentMethod) {
         const pendingOrder = await createPendingOrder();
@@ -275,7 +314,7 @@ function CheckOut() {
         setProcessing(false);
         return;
       }
-      
+
       // For COD payments
       if (paymentMethod === "cod") {
         const orderData = {
@@ -284,34 +323,38 @@ function CheckOut() {
           paymentMethod,
           deliveryType,
           notes,
-          deliveryLocation
+          deliveryLocation,
         };
-        
+
         // Create new order for COD
         const response = await createOrder(orderData);
-        
+
         if (response.success) {
           toast.success("Order placed successfully!");
           await fetchCart();
-          navigate('/orders');
+          navigate("/orders");
         } else {
           toast.error(response.message || "Failed to place order");
         }
-      } 
+      }
       // For card payments with existing payment method
-      else if (paymentMethod === "card" && existingOrderId && stripePaymentMethod) {
+      else if (
+        paymentMethod === "card" &&
+        existingOrderId &&
+        stripePaymentMethod
+      ) {
         // Update existing order (for card payments)
         const response = await updateOrderPayment({
           orderId: existingOrderId,
           paymentId: stripePaymentMethod.id,
           paymentIntentId: paymentIntentId,
-          status: "completed"
+          status: "completed",
         });
-        
+
         if (response.success) {
           toast.success("Payment successful and order confirmed!");
           await fetchCart();
-          navigate('/orders');
+          navigate("/orders");
         } else {
           toast.error(response.message || "Payment update failed");
         }
@@ -323,23 +366,25 @@ function CheckOut() {
       setShowConfirmModal(false);
     }
   };
-  
+
   // Handle shipping address change
   const handleShippingAddressChange = (e) => {
     const { name, value } = e.target;
     setShippingAddress((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-  
+
   // Define styles for location input based on error state
-  const locationInputStyle = locationError ? {
-    border: '1px solid red',
-    borderRadius: '4px',
-    padding: '10px'
-  } : {};
-  
+  const locationInputStyle = locationError
+    ? {
+        border: "1px solid red",
+        borderRadius: "4px",
+        padding: "10px",
+      }
+    : {};
+
   // If loading, show spinner
   if (loading) {
     return (
@@ -351,7 +396,7 @@ function CheckOut() {
       </Container>
     );
   }
-  
+
   // If error, show error message
   if (error) {
     return (
@@ -360,7 +405,7 @@ function CheckOut() {
       </Container>
     );
   }
-  
+
   // If cart is empty, show empty cart message
   if (cartItems.length === 0) {
     return (
@@ -372,18 +417,23 @@ function CheckOut() {
       </Container>
     );
   }
-  
+
   // Main checkout form
   return (
     <Container className="py-5">
       <h1 className="mb-4">Checkout</h1>
-      
+
       {error && (
-        <Alert variant="danger" className="mb-4" dismissible onClose={() => setError(null)}>
+        <Alert
+          variant="danger"
+          className="mb-4"
+          dismissible
+          onClose={() => setError(null)}
+        >
           {error}
         </Alert>
       )}
-      
+
       <Row>
         {/* Left Column - Checkout Form */}
         <Col md={8}>
@@ -407,7 +457,7 @@ function CheckOut() {
                     </Form.Group>
                   </Col>
                 </Row>
-                
+
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
@@ -434,7 +484,7 @@ function CheckOut() {
                     </Form.Group>
                   </Col>
                 </Row>
-                
+
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">
@@ -464,7 +514,7 @@ function CheckOut() {
               </Form>
             </Card.Body>
           </Card>
-          
+
           {/* Delivery Options */}
           <Card className="mb-4">
             <Card.Header>
@@ -472,38 +522,49 @@ function CheckOut() {
             </Card.Header>
             <Card.Body>
               <Form.Group className="mb-3">
-                <Form.Check 
-                  type="radio" 
-                  id="standard-delivery" 
-                  name="deliveryType" 
-                  label="Standard Delivery ($5.00) - 3-5 business days" 
+                <Form.Check
+                  type="radio"
+                  id="standard-delivery"
+                  name="deliveryType"
+                  label="Standard Delivery ($5.00) - 3-5 business days"
                   checked={deliveryType === "standard"}
-                  onChange={() => handleDeliveryTypeChange("standard")} 
+                  onChange={() => handleDeliveryTypeChange("standard")}
                 />
-                <Form.Check 
-                  type="radio" 
-                  id="express-delivery" 
-                  name="deliveryType" 
-                  label="Express Delivery ($10.00) - 1-2 business days" 
+                <Form.Check
+                  type="radio"
+                  id="express-delivery"
+                  name="deliveryType"
+                  label="Express Delivery ($10.00) - 1-2 business days"
                   checked={deliveryType === "express"}
                   onChange={() => handleDeliveryTypeChange("express")}
                 />
               </Form.Group>
-              
+
               <Form.Group className="mb-4">
-                <Form.Label>Delivery Location {locationError && <span className="text-danger">*</span>}</Form.Label>
+                <Form.Label>
+                  Delivery Location{" "}
+                  {locationError && <span className="text-danger">*</span>}
+                </Form.Label>
                 <div style={locationInputStyle}>
-                  <DeliveryLocationMap 
+                  <DeliveryLocationMap
                     onLocationSelect={handleMapClick}
                     initialLocation={deliveryLocation}
                   />
                 </div>
-                <Form.Text className={locationError ? "text-danger" : "text-muted"}>
-                  {locationError ? "Please click on the map to set your delivery location" : "Click on the map to set your delivery location"}
+                <Form.Text
+                  className={locationError ? "text-danger" : "text-muted"}
+                >
+                  {locationError
+                    ? "Please click on the map to set your delivery location"
+                    : "Click on the map to set your delivery location"}
                 </Form.Text>
                 {locationSelected && (
                   <Alert variant="success" className="mt-2 p-2">
-                    <small>Delivery location selected at coordinates: {deliveryLocation.latitude.toFixed(4)}, {deliveryLocation.longitude.toFixed(4)}</small>
+                    <small>
+                      Delivery location selected at coordinates:{" "}
+                      {deliveryLocation.latitude.toFixed(4)},{" "}
+                      {deliveryLocation.longitude.toFixed(4)}
+                    </small>
                   </Alert>
                 )}
               </Form.Group>
@@ -517,37 +578,36 @@ function CheckOut() {
             </Card.Header>
             <Card.Body>
               <Form.Group className="mb-3">
-                <Form.Check 
-                  type="radio" 
-                  id="cod-payment" 
-                  name="paymentMethod" 
-                  label="Cash on Delivery" 
+                <Form.Check
+                  type="radio"
+                  id="cod-payment"
+                  name="paymentMethod"
+                  label="Cash on Delivery"
                   checked={paymentMethod === "cod"}
-                  onChange={() => handlePaymentMethodChange("cod")} 
+                  onChange={() => handlePaymentMethodChange("cod")}
                 />
-                <Form.Check 
-                  type="radio" 
-                  id="card-payment" 
-                  name="paymentMethod" 
-                  label="Credit/Debit Card" 
+                <Form.Check
+                  type="radio"
+                  id="card-payment"
+                  name="paymentMethod"
+                  label="Credit/Debit Card"
                   checked={paymentMethod === "card"}
-                  onChange={() => handlePaymentMethodChange("card")} 
+                  onChange={() => handlePaymentMethodChange("card")}
                 />
-
               </Form.Group>
-              
+
               {paymentMethod === "card" && (
                 <div className="mt-4">
                   <h5>Card Payment</h5>
                   {clientSecret ? (
-                    <StripeWrapper 
+                    <StripeWrapper
                       orderId={pendingOrderId}
                       clientSecret={clientSecret}
                       onPaymentMethod={handleStripePaymentMethod}
                     />
                   ) : (
-                    <Button 
-                      variant="outline-primary" 
+                    <Button
+                      variant="outline-primary"
                       onClick={() => createPendingOrder()}
                       disabled={processing}
                     >
@@ -556,12 +616,12 @@ function CheckOut() {
                   )}
                 </div>
               )}
-              
+
               <Form.Group className="mt-4">
                 <Form.Label>Order Notes (Optional)</Form.Label>
-                <Form.Control 
-                  as="textarea" 
-                  rows={3} 
+                <Form.Control
+                  as="textarea"
+                  rows={3}
                   placeholder="Special instructions for delivery"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -570,7 +630,7 @@ function CheckOut() {
             </Card.Body>
           </Card>
         </Col>
-        
+
         {/* Right Column - Order Summary */}
         <Col md={4}>
           <Card>
@@ -581,7 +641,10 @@ function CheckOut() {
               <div className="mb-4">
                 <h5>Items ({cartItems.length})</h5>
                 {cartItems.map((item) => (
-                  <div key={item._id} className="d-flex justify-content-between mb-2">
+                  <div
+                    key={item._id}
+                    className="d-flex justify-content-between mb-2"
+                  >
                     <span>
                       {item.name} x {item.quantity}
                     </span>
@@ -589,9 +652,9 @@ function CheckOut() {
                   </div>
                 ))}
               </div>
-              
+
               <hr />
-              
+
               <div className="d-flex justify-content-between mb-2">
                 <span>Subtotal</span>
                 <span>${subtotal.toFixed(2)}</span>
@@ -604,20 +667,27 @@ function CheckOut() {
                 <span>Total</span>
                 <span>${calculateTotal().toFixed(2)}</span>
               </div>
-              
-              <Button 
-                variant="primary" 
-                className="w-100 mt-4" 
+
+              <Button
+                variant="primary"
+                className="w-100 mt-4"
                 onClick={() => setShowConfirmModal(true)}
-                disabled={processing || (paymentMethod === "card" && !stripePaymentMethod)}
+                disabled={
+                  processing ||
+                  (paymentMethod === "card" && !stripePaymentMethod)
+                }
               >
-                {processing ? "Processing..." : paymentMethod === "card" ? "Complete Payment" : "Place Order"}
+                {processing
+                  ? "Processing..."
+                  : paymentMethod === "card"
+                  ? "Complete Payment"
+                  : "Place Order"}
               </Button>
             </Card.Body>
           </Card>
         </Col>
       </Row>
-      
+
       {/* Confirmation Modal */}
       <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)}>
         <Modal.Header closeButton>
@@ -628,15 +698,23 @@ function CheckOut() {
           <p>
             <strong>Total Amount:</strong> ${calculateTotal().toFixed(2)}
             <br />
-            <strong>Payment Method:</strong> {paymentMethod === "cod" ? "Cash on Delivery" : paymentMethod === "card" ? "Credit/Debit Card" : "Wallet"}
+            <strong>Payment Method:</strong>{" "}
+            {paymentMethod === "cod"
+              ? "Cash on Delivery"
+              : paymentMethod === "card"
+              ? "Credit/Debit Card"
+              : "Wallet"}
           </p>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowConfirmModal(false)}
+          >
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={() => handlePlaceOrder(pendingOrderId)}
             disabled={processing}
           >

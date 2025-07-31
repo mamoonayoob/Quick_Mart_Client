@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from "react";
 import {
   Row,
   Col,
@@ -8,8 +9,8 @@ import {
   Table,
   Alert,
   Spinner,
-  Badge
-} from 'react-bootstrap';
+  Badge,
+} from "react-bootstrap";
 import {
   BsArrowUp,
   BsArrowDown,
@@ -17,9 +18,9 @@ import {
   BsBoxSeam,
   BsGraphUp,
   BsExclamationTriangle,
-  BsInfoCircle
-} from 'react-icons/bs';
-import { Line, Bar } from 'react-chartjs-2';
+  BsInfoCircle,
+} from "react-icons/bs";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,10 +31,10 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
-} from 'chart.js';
-import { forecastingService } from '../../services/forecastingApi';
-import ProductForecast from './ProductForecast';
+  Filler,
+} from "chart.js";
+import { forecastingService } from "../../services/forecastingApi";
+import ProductForecast from "./ProductForecast";
 
 // Register Chart.js components
 ChartJS.register(
@@ -53,7 +54,7 @@ const VendorForecasting = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState(30);
-  
+
   // ProductForecast modal state
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -66,26 +67,31 @@ const VendorForecasting = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      console.log('[DEBUG] Fetching forecast data with period:', selectedPeriod);
-      
-      const response = await forecastingService.getVendorForecast(selectedPeriod);
-      
-      console.log('[DEBUG] API Response:', response);
-      console.log('[DEBUG] Response success:', response.success);
-      console.log('[DEBUG] Response data:', response.data);
-      
+
+      console.log(
+        "[DEBUG] Fetching forecast data with period:",
+        selectedPeriod
+      );
+
+      const response = await forecastingService.getVendorForecast(
+        selectedPeriod
+      );
+
+      console.log("[DEBUG] API Response:", response);
+      console.log("[DEBUG] Response success:", response.success);
+      console.log("[DEBUG] Response data:", response.data);
+
       if (response.success) {
-        console.log('[DEBUG] Setting forecast data:', response.data);
+        console.log("[DEBUG] Setting forecast data:", response.data);
         setForecastData(response.data);
       } else {
-        console.log('[DEBUG] API Error:', response.message);
-        setError(response.message || 'Failed to fetch forecast data');
+        console.log("[DEBUG] API Error:", response.message);
+        setError(response.message || "Failed to fetch forecast data");
       }
     } catch (err) {
-      console.error('[DEBUG] Forecast fetch error:', err);
-      console.error('[DEBUG] Error details:', err.response?.data);
-      setError('Failed to load forecast data');
+      console.error("[DEBUG] Forecast fetch error:", err);
+      console.error("[DEBUG] Error details:", err.response?.data);
+      setError("Failed to load forecast data");
     } finally {
       setLoading(false);
     }
@@ -93,25 +99,35 @@ const VendorForecasting = () => {
 
   // Format chart data for forecasting visualization
   const formatForecastChartData = () => {
-    if (!forecastData || !forecastData.forecasts || forecastData.forecasts.length === 0) {
+    if (
+      !forecastData ||
+      !forecastData.forecasts ||
+      forecastData.forecasts.length === 0
+    ) {
       return {
-        labels: ['No Data'],
-        datasets: [{
-          label: 'No Forecast Data',
-          data: [0],
-          borderColor: 'rgba(128, 128, 128, 0.5)',
-          backgroundColor: 'rgba(128, 128, 128, 0.1)',
-        }]
+        labels: ["No Data"],
+        datasets: [
+          {
+            label: "No Forecast Data",
+            data: [0],
+            borderColor: "rgba(128, 128, 128, 0.5)",
+            backgroundColor: "rgba(128, 128, 128, 0.1)",
+          },
+        ],
       };
     }
 
     // Get top 5 products for chart
     const topProducts = forecastData.forecasts.slice(0, 5);
-    const labels = topProducts.map(product => product.productName || 'Unknown Product');
-    const forecastData_values = topProducts.map(product => 
-      product.summary?.total_predicted_quantity || 0
+    const labels = topProducts.map(
+      (product) => product.productName || "Unknown Product"
     );
-    const currentStock = topProducts.map(product => product.currentStock || 0);
+    const forecastData_values = topProducts.map(
+      (product) => product.summary?.total_predicted_quantity || 0
+    );
+    const currentStock = topProducts.map(
+      (product) => product.currentStock || 0
+    );
 
     return {
       labels,
@@ -119,18 +135,18 @@ const VendorForecasting = () => {
         {
           label: `Forecast (${selectedPeriod} days)`,
           data: forecastData_values,
-          backgroundColor: 'rgba(54, 162, 235, 0.7)',
-          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: "rgba(54, 162, 235, 0.7)",
+          borderColor: "rgba(54, 162, 235, 1)",
           borderWidth: 1,
         },
         {
-          label: 'Current Stock',
+          label: "Current Stock",
           data: currentStock,
-          backgroundColor: 'rgba(75, 192, 192, 0.7)',
-          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: "rgba(75, 192, 192, 0.7)",
+          borderColor: "rgba(75, 192, 192, 1)",
           borderWidth: 1,
-        }
-      ]
+        },
+      ],
     };
   };
 
@@ -139,11 +155,11 @@ const VendorForecasting = () => {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top',
+        position: "top",
       },
       title: {
         display: true,
-        text: 'Demand Forecast vs Current Stock',
+        text: "Demand Forecast vs Current Stock",
       },
     },
     scales: {
@@ -151,15 +167,15 @@ const VendorForecasting = () => {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Quantity'
-        }
+          text: "Quantity",
+        },
       },
       x: {
         title: {
           display: true,
-          text: 'Products'
-        }
-      }
+          text: "Products",
+        },
+      },
     },
   };
 
@@ -167,14 +183,15 @@ const VendorForecasting = () => {
   const totalProducts = forecastData?.forecasts?.length || 0;
   const avgDailyForecast = forecastData?.summary?.averageDailyQuantity || 0;
   const totalForecast = forecastData?.summary?.totalPredictedQuantity || 0;
-  const lowStockProducts = forecastData?.forecasts?.filter(p => 
-    p.currentStock < (p.summary?.average_daily_quantity * 7) || 0
-  ).length || 0;
+  const lowStockProducts =
+    forecastData?.forecasts?.filter(
+      (p) => p.currentStock < p.summary?.average_daily_quantity * 7 || 0
+    ).length || 0;
 
   const getStockAlerts = () => {
     if (!forecastData || !forecastData.forecasts) return [];
-    
-    return forecastData.forecasts.filter(product => {
+
+    return forecastData.forecasts.filter((product) => {
       const avgForecast = product.summary?.average_daily_quantity || 0;
       const currentStock = product.currentStock || 0;
       return currentStock < avgForecast * 7; // Less than 7 days of stock
@@ -185,7 +202,7 @@ const VendorForecasting = () => {
   const handleProductClick = (product) => {
     setSelectedProduct({
       id: product.productId,
-      name: product.productName
+      name: product.productName,
     });
     setShowProductModal(true);
   };
@@ -207,9 +224,11 @@ const VendorForecasting = () => {
           <BsGraphUp className="me-2" />
           Demand Forecasting
         </h1>
-        <p className="text-muted">AI-powered sales predictions for your products</p>
+        <p className="text-muted">
+          AI-powered sales predictions for your products
+        </p>
       </div>
-      
+
       {/* Date Range Filter */}
       <Card className="admin-card mb-4">
         <Card.Body>
@@ -231,25 +250,30 @@ const VendorForecasting = () => {
                   <option value={30}>Next 30 Days</option>
                   <option value={90}>Next 90 Days</option>
                 </Form.Select>
-                <Button 
-                  variant="outline-primary" 
+                <Button
+                  variant="outline-primary"
                   size="sm"
                   onClick={fetchForecastData}
                   disabled={loading}
                 >
-                  {loading ? 'Loading...' : 'Refresh'}
+                  {loading ? "Loading..." : "Refresh"}
                 </Button>
               </div>
             </Col>
           </Row>
         </Card.Body>
       </Card>
-      
+
       {error && (
         <Alert variant="danger" className="mb-4">
           <BsExclamationTriangle className="me-2" />
           {error}
-          <Button variant="outline-danger" size="sm" className="ms-2" onClick={fetchForecastData}>
+          <Button
+            variant="outline-danger"
+            size="sm"
+            className="ms-2"
+            onClick={fetchForecastData}
+          >
             Try Again
           </Button>
         </Alert>
@@ -271,7 +295,7 @@ const VendorForecasting = () => {
             </Card.Body>
           </Card>
         </Col>
-        
+
         <Col lg={3} md={6} className="mb-4 mb-lg-0">
           <Card className="admin-card h-100">
             <Card.Body>
@@ -287,7 +311,7 @@ const VendorForecasting = () => {
             </Card.Body>
           </Card>
         </Col>
-        
+
         <Col lg={3} md={6} className="mb-4 mb-lg-0">
           <Card className="admin-card h-100">
             <Card.Body>
@@ -299,17 +323,23 @@ const VendorForecasting = () => {
                 </div>
               </div>
               <h3 className="card-value">{totalForecast.toFixed(0)}</h3>
-              <p className="text-muted small">Units for {selectedPeriod} days</p>
+              <p className="text-muted small">
+                Units for {selectedPeriod} days
+              </p>
             </Card.Body>
           </Card>
         </Col>
-        
+
         <Col lg={3} md={6}>
           <Card className="admin-card h-100">
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h6 className="card-subtitle text-muted">Stock Alerts</h6>
-                <div className={`trend ${lowStockProducts > 0 ? 'trend-down' : 'trend-neutral'}`}>
+                <div
+                  className={`trend ${
+                    lowStockProducts > 0 ? "trend-down" : "trend-neutral"
+                  }`}
+                >
                   <BsExclamationTriangle />
                   {lowStockProducts > 0 && <span>Alert</span>}
                 </div>
@@ -353,7 +383,8 @@ const VendorForecasting = () => {
               <Card.Body>
                 <Alert variant="warning" className="mb-3">
                   <BsInfoCircle className="me-2" />
-                  The following products may run out of stock based on forecast predictions:
+                  The following products may run out of stock based on forecast
+                  predictions:
                 </Alert>
                 <Table responsive striped>
                   <thead>
@@ -368,7 +399,8 @@ const VendorForecasting = () => {
                   <tbody>
                     {stockAlerts.map((product, index) => {
                       const daysUntilStockOut = Math.floor(
-                        product.current_stock / (product.forecast_summary?.avg_forecast || 1)
+                        product.current_stock /
+                          (product.forecast_summary?.avg_forecast || 1)
                       );
                       return (
                         <tr key={index}>
@@ -376,13 +408,25 @@ const VendorForecasting = () => {
                             <strong>{product.name}</strong>
                           </td>
                           <td>
-                            <Badge bg={product.current_stock < 10 ? 'danger' : 'warning'}>
+                            <Badge
+                              bg={
+                                product.current_stock < 10
+                                  ? "danger"
+                                  : "warning"
+                              }
+                            >
                               {product.current_stock}
                             </Badge>
                           </td>
-                          <td>{product.forecast_summary?.avg_forecast?.toFixed(1) || '0'}</td>
                           <td>
-                            <Badge bg={daysUntilStockOut < 3 ? 'danger' : 'warning'}>
+                            {product.forecast_summary?.avg_forecast?.toFixed(
+                              1
+                            ) || "0"}
+                          </td>
+                          <td>
+                            <Badge
+                              bg={daysUntilStockOut < 3 ? "danger" : "warning"}
+                            >
                               {daysUntilStockOut} days
                             </Badge>
                           </td>
@@ -403,76 +447,98 @@ const VendorForecasting = () => {
       )}
 
       {/* Product Forecast Table */}
-      {forecastData && forecastData.forecasts && forecastData.forecasts.length > 0 && (
-        <Row>
-          <Col>
-            <Card className="admin-card">
-              <Card.Body>
-                <h5 className="mb-3">
-                  <BsBoxSeam className="me-2" />
-                  Product Forecast Summary
-                </h5>
-                <Table responsive striped hover>
-                  <thead>
-                    <tr>
-                      <th>Product Name</th>
-                      <th>Current Stock</th>
-                      <th>Avg Daily Forecast</th>
-                      <th>Total Forecast ({selectedPeriod} days)</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {forecastData.forecasts.slice(0, 10).map((product, index) => (
-                      <tr key={index}>
-                        <td>
-                          <strong 
-                            style={{ cursor: 'pointer', color: '#007bff' }}
-                            onClick={() => handleProductClick(product)}
-                            title="Click for detailed forecast"
-                          >
-                            {product.productName || 'Unknown Product'}
-                          </strong>
-                          <br />
-                          <small className="text-muted">{product.category || 'No Category'}</small>
-                        </td>
-                        <td>
-                          <Badge bg={product.currentStock < 10 ? 'danger' : 'success'}>
-                            {product.currentStock || 0}
-                          </Badge>
-                        </td>
-                        <td>{product.summary?.average_daily_quantity?.toFixed(1) || '0'}</td>
-                        <td>
-                          <strong>{product.summary?.total_predicted_quantity?.toFixed(0) || '0'}</strong>
-                        </td>
-                        <td>
-                          {product.summary?.predicted_growth_rate_percent > 0 ? (
-                            <Badge bg="success">
-                              <BsArrowUp className="me-1" />
-                              Growing
-                            </Badge>
-                          ) : product.summary?.predicted_growth_rate_percent < 0 ? (
-                            <Badge bg="danger">
-                              <BsArrowDown className="me-1" />
-                              Declining
-                            </Badge>
-                          ) : (
-                            <Badge bg="warning">
-                              <BsArrowDown className="me-1" />
-                              Stable
-                            </Badge>
-                          )}
-                        </td>
+      {forecastData &&
+        forecastData.forecasts &&
+        forecastData.forecasts.length > 0 && (
+          <Row>
+            <Col>
+              <Card className="admin-card">
+                <Card.Body>
+                  <h5 className="mb-3">
+                    <BsBoxSeam className="me-2" />
+                    Product Forecast Summary
+                  </h5>
+                  <Table responsive striped hover>
+                    <thead>
+                      <tr>
+                        <th>Product Name</th>
+                        <th>Current Stock</th>
+                        <th>Avg Daily Forecast</th>
+                        <th>Total Forecast ({selectedPeriod} days)</th>
+                        <th>Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )}
-      
+                    </thead>
+                    <tbody>
+                      {forecastData.forecasts
+                        .slice(0, 10)
+                        .map((product, index) => (
+                          <tr key={index}>
+                            <td>
+                              <strong
+                                style={{ cursor: "pointer", color: "#007bff" }}
+                                onClick={() => handleProductClick(product)}
+                                title="Click for detailed forecast"
+                              >
+                                {product.productName || "Unknown Product"}
+                              </strong>
+                              <br />
+                              <small className="text-muted">
+                                {product.category || "No Category"}
+                              </small>
+                            </td>
+                            <td>
+                              <Badge
+                                bg={
+                                  product.currentStock < 10
+                                    ? "danger"
+                                    : "success"
+                                }
+                              >
+                                {product.currentStock || 0}
+                              </Badge>
+                            </td>
+                            <td>
+                              {product.summary?.average_daily_quantity?.toFixed(
+                                1
+                              ) || "0"}
+                            </td>
+                            <td>
+                              <strong>
+                                {product.summary?.total_predicted_quantity?.toFixed(
+                                  0
+                                ) || "0"}
+                              </strong>
+                            </td>
+                            <td>
+                              {product.summary?.predicted_growth_rate_percent >
+                              0 ? (
+                                <Badge bg="success">
+                                  <BsArrowUp className="me-1" />
+                                  Growing
+                                </Badge>
+                              ) : product.summary
+                                  ?.predicted_growth_rate_percent < 0 ? (
+                                <Badge bg="danger">
+                                  <BsArrowDown className="me-1" />
+                                  Declining
+                                </Badge>
+                              ) : (
+                                <Badge bg="warning">
+                                  <BsArrowDown className="me-1" />
+                                  Stable
+                                </Badge>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </Table>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        )}
+
       {/* Product Forecast Modal */}
       {selectedProduct && (
         <ProductForecast

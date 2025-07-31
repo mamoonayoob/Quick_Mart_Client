@@ -624,45 +624,7 @@ const NavigationBar = () => {
         </Navbar.Collapse>
       </Navbar>
 
-      {/* Chatbot Button for Customers - NEW */}
-      {isAuthenticated && user?.role === "customer" && (
-        <div
-          ref={chatbotRef}
-          className="position-fixed"
-          style={{ bottom: "20px", right: "20px", zIndex: 9999 }}
-        >
-          <Button
-            variant="success"
-            className="rounded-circle shadow pulse-animation"
-            style={{
-              width: "60px",
-              height: "60px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onClick={() => setShowChatbot(!showChatbot)}
-          >
-            <BsChatDots size={24} />
-          </Button>
-
-          {showChatbot && (
-            <div
-              className="position-absolute bg-white rounded shadow-lg"
-              style={{
-                bottom: "70px",
-                right: "0",
-                width: "350px",
-                height: "500px",
-                overflow: "hidden",
-                zIndex: 9999,
-              }}
-            >
-              <ChatBot onClose={() => setShowChatbot(false)} />
-            </div>
-          )}
-        </div>
-      )}
+   
     </>
   );
 };

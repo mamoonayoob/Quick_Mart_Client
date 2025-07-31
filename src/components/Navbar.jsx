@@ -29,68 +29,9 @@ import { useMessages } from "../context/MessageContext";
 import NotificationDropdown from "./messaging/NotificationDropdown";
 import "./Navbar.css"; // Import the CSS file
 import logo from "../assets/logoIcon.png";
-import axios from "axios";
+
 
 // Define styles for ChatBot component
-const chatBotStyles = {
-  chatBox: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-  },
-  header: {
-    padding: "10px 15px",
-    backgroundColor: "#198754",
-    color: "white",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  closeButton: {
-    background: "none",
-    border: "none",
-    color: "white",
-    fontSize: "24px",
-    cursor: "pointer",
-  },
-  messages: {
-    flex: 1,
-    overflowY: "auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    padding: 15,
-  },
-  message: {
-    padding: "10px 15px",
-    borderRadius: 20,
-    maxWidth: "80%",
-    fontSize: 14,
-    boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-  },
-  inputArea: {
-    display: "flex",
-    gap: 8,
-    padding: 10,
-    borderTop: "1px solid #eee",
-  },
-  input: {
-    flex: 1,
-    padding: 10,
-    borderRadius: 20,
-    border: "1px solid #ccc",
-    outline: "none",
-  },
-  button: {
-    padding: "8px 16px",
-    borderRadius: 20,
-    border: "none",
-    backgroundColor: "#198754",
-    color: "white",
-    cursor: "pointer",
-  },
-};
 
 
 
@@ -101,7 +42,6 @@ const NavigationBar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const notificationRef = useRef(null);
-  const chatbotRef = useRef(null);
   const navigate = useNavigate();
   // const location = useLocation();
   const dispatch = useDispatch();
